@@ -1,0 +1,25 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: ocr-cin-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: ocr_user
+      POSTGRES_PASSWORD: ocr_password
+      POSTGRES_DB: ocr_cin_db
+
+    ports:
+      - "5434:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ocr_user -d ocr_cin_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

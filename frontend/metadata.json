@@ -1,0 +1,6 @@
+{
+  "name": "Recensement & OCR CIN Madagascar",
+  "description": "Plateforme de gestion de recensement administratif et vérification CIN pour Administrateur, Agent et Chef Fokontany.",
+  "permissions": [],
+  "capabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

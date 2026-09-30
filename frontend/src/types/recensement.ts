@@ -1,0 +1,33 @@
+export interface RecensementCreate {
+  numero_karine?: string | null;
+  nom: string;
+  prenoms: string;
+  sexe?: string | null;
+  date_naissance?: string | null;
+  lieu_naissance?: string | null;
+  nee_vers?: boolean | null;
+  numero_cin: string;
+  numero_serie_cin?: string | null;
+  profession?: string | null;
+  nom_pere?: string | null;
+  pere_decede?: boolean | null;
+  nom_mere?: string | null;
+  mere_decede?: boolean | null;
+  lieu_delivrance?: string | null;
+  date_delivrance?: string | null;
+  telephone?: string | null;
+  lot_logement?: string | null;
+  quartier_secteur?: string | null;
+  date_recensement_terrain?: string | null;
+}
+
+export interface RecensementResponse {
+  success: boolean;
+  recensement_id: string;
+  personne_id: string;
+  numero_fiche: string;
+  numero_cin: string;
+  qr_token: string;
+  statut: string;
+  message: string;
+}

@@ -1,0 +1,686 @@
+[
+    {
+        "province": "Antananarivo",
+        "region": "Analamanga",
+        "numero_district": 1,
+        "district": "Ambohidratrimo"
+    },
+    {
+        "province": "Antananarivo",
+        "region": "Analamanga",
+        "numero_district": 2,
+        "district": "Andramasina"
+    },
+    {
+        "province": "Antananarivo",
+        "region": "Analamanga",
+        "numero_district": 3,
+        "district": "Anjozorobe"
+    },
+    {
+        "province": "Antananarivo",
+        "region": "Analamanga",
+        "numero_district": 4,
+        "district": "Ankazobe"
+    },
+    {
+        "province": "Antananarivo",
+        "region": "Analamanga",
+        "numero_district": 5,
+        "district": "Antananarivo Atsimondrano"
+    },
+    {
+        "province": "Antananarivo",
+        "region": "Analamanga",
+        "numero_district": 6,
+        "district": "Antananarivo Avaradrano"
+    },
+    {
+        "province": "Antananarivo",
+        "region": "Analamanga",
+        "numero_district": 7,
+        "district": "Antananarivo Renivohitra"
+    },
+    {
+        "province": "Antananarivo",
+        "region": "Analamanga",
+        "numero_district": 13,
+        "district": "Manjakandriana"
+    },
+    {
+        "province": "Antananarivo",
+        "region": "Bongolava",
+        "numero_district": 14,
+        "district": "Fenoarivobe"
+    },
+    {
+        "province": "Antananarivo",
+        "region": "Bongolava",
+        "numero_district": 15,
+        "district": "Tsiroanomandidy"
+    },
+    {
+        "province": "Antananarivo",
+        "region": "Itasy",
+        "numero_district": 16,
+        "district": "Arivonimamo"
+    },
+    {
+        "province": "Antananarivo",
+        "region": "Itasy",
+        "numero_district": 17,
+        "district": "Miarinarivo"
+    },
+    {
+        "province": "Antananarivo",
+        "region": "Itasy",
+        "numero_district": 18,
+        "district": "Soavinandriana"
+    },
+    {
+        "province": "Antananarivo",
+        "region": "Vakinankaratra",
+        "numero_district": 19,
+        "district": "Ambatolampy"
+    },
+    {
+        "province": "Antananarivo",
+        "region": "Vakinankaratra",
+        "numero_district": 20,
+        "district": "Antanifotsy"
+    },
+    {
+        "province": "Antananarivo",
+        "region": "Vakinankaratra",
+        "numero_district": 21,
+        "district": "Antsirabe I"
+    },
+    {
+        "province": "Antananarivo",
+        "region": "Vakinankaratra",
+        "numero_district": 22,
+        "district": "Antsirabe II"
+    },
+    {
+        "province": "Antananarivo",
+        "region": "Vakinankaratra",
+        "numero_district": 23,
+        "district": "Betafo"
+    },
+    {
+        "province": "Antananarivo",
+        "region": "Vakinankaratra",
+        "numero_district": 24,
+        "district": "Faratsiho"
+    },
+    {
+        "province": "Antananarivo",
+        "region": "Vakinankaratra",
+        "numero_district": 25,
+        "district": "Mandoto"
+    },
+    {
+        "province": "Antsiranana",
+        "region": "DIANA",
+        "numero_district": 26,
+        "district": "Ambanja"
+    },
+    {
+        "province": "Antsiranana",
+        "region": "DIANA",
+        "numero_district": 27,
+        "district": "Ambilobe"
+    },
+    {
+        "province": "Antsiranana",
+        "region": "DIANA",
+        "numero_district": 28,
+        "district": "Antsiranana I"
+    },
+    {
+        "province": "Antsiranana",
+        "region": "DIANA",
+        "numero_district": 29,
+        "district": "Antsiranana II"
+    },
+    {
+        "province": "Antsiranana",
+        "region": "DIANA",
+        "numero_district": 30,
+        "district": "Nosy-Be"
+    },
+    {
+        "province": "Antsiranana",
+        "region": "SAVA",
+        "numero_district": 31,
+        "district": "Andapa"
+    },
+    {
+        "province": "Antsiranana",
+        "region": "SAVA",
+        "numero_district": 32,
+        "district": "Antalaha"
+    },
+    {
+        "province": "Antsiranana",
+        "region": "SAVA",
+        "numero_district": 33,
+        "district": "Sambava"
+    },
+    {
+        "province": "Antsiranana",
+        "region": "SAVA",
+        "numero_district": 34,
+        "district": "Vohemar"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "AMORON'I MANIA",
+        "numero_district": 35,
+        "district": "Ambatofinandrahana"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "AMORON'I MANIA",
+        "numero_district": 36,
+        "district": "Ambositra"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "AMORON'I MANIA",
+        "numero_district": 37,
+        "district": "Fandriana"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "AMORON'I MANIA",
+        "numero_district": 38,
+        "district": "Manandriana"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "ATSIMO-ATSINANANA",
+        "numero_district": 39,
+        "district": "Befotaka Atsimo"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "ATSIMO-ATSINANANA",
+        "numero_district": 40,
+        "district": "Farafangana"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "ATSIMO-ATSINANANA",
+        "numero_district": 41,
+        "district": "Midongy Sud"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "ATSIMO-ATSINANANA",
+        "numero_district": 42,
+        "district": "Vangaindrano"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "ATSIMO-ATSINANANA",
+        "numero_district": 43,
+        "district": "Vondrozo"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "HAUTE MATSIATRA",
+        "numero_district": 44,
+        "district": "Ambalavao"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "HAUTE MATSIATRA",
+        "numero_district": 45,
+        "district": "Ambohimahasoa"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "HAUTE MATSIATRA",
+        "numero_district": 46,
+        "district": "Fianarantsoa"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "HAUTE MATSIATRA",
+        "numero_district": 47,
+        "district": "Ikalamavony"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "HAUTE MATSIATRA",
+        "numero_district": 48,
+        "district": "Isandra"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "HAUTE MATSIATRA",
+        "numero_district": 49,
+        "district": "Lalangina"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "HAUTE MATSIATRA",
+        "numero_district": 50,
+        "district": "Vohibato"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "IHOROMBE",
+        "numero_district": 51,
+        "district": "Iakora"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "IHOROMBE",
+        "numero_district": 52,
+        "district": "Ihosy"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "IHOROMBE",
+        "numero_district": 53,
+        "district": "Ivohibe"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "VATOVAVY & FITOVINANY",
+        "numero_district": 54,
+        "district": "Ifanadiana"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "VATOVAVY & FITOVINANY",
+        "numero_district": 55,
+        "district": "Ikongo"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "VATOVAVY & FITOVINANY",
+        "numero_district": 56,
+        "district": "Manakara"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "VATOVAVY & FITOVINANY",
+        "numero_district": 57,
+        "district": "Mananjary"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "VATOVAVY & FITOVINANY",
+        "numero_district": 58,
+        "district": "Nosy Varika"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "VATOVAVY & FITOVINANY",
+        "numero_district": 59,
+        "district": "Vohipeno"
+    },
+    {
+        "province": "Mahajanga",
+        "region": "BETSIBOKA",
+        "numero_district": 60,
+        "district": "Kandreho"
+    },
+    {
+        "province": "Mahajanga",
+        "region": "BETSIBOKA",
+        "numero_district": 61,
+        "district": "Maevatanana"
+    },
+    {
+        "province": "Mahajanga",
+        "region": "BETSIBOKA",
+        "numero_district": 62,
+        "district": "Tsaratanana"
+    },
+    {
+        "province": "Mahajanga",
+        "region": "BOENY",
+        "numero_district": 63,
+        "district": "Ambato Boeni"
+    },
+    {
+        "province": "Mahajanga",
+        "region": "BOENY",
+        "numero_district": 64,
+        "district": "Mahajanga I"
+    },
+    {
+        "province": "Mahajanga",
+        "region": "BOENY",
+        "numero_district": 65,
+        "district": "Mahajanga II"
+    },
+    {
+        "province": "Mahajanga",
+        "region": "BOENY",
+        "numero_district": 66,
+        "district": "Marovoay"
+    },
+    {
+        "province": "Mahajanga",
+        "region": "BOENY",
+        "numero_district": 67,
+        "district": "Mitsinjo"
+    },
+    {
+        "province": "Mahajanga",
+        "region": "BOENY",
+        "numero_district": 68,
+        "district": "Soalala"
+    },
+    {
+        "province": "Mahajanga",
+        "region": "MELAKY",
+        "numero_district": 69,
+        "district": "Ambatomainty"
+    },
+    {
+        "province": "Mahajanga",
+        "region": "MELAKY",
+        "numero_district": 70,
+        "district": "Antsalova"
+    },
+    {
+        "province": "Mahajanga",
+        "region": "MELAKY",
+        "numero_district": 71,
+        "district": "Besalampy"
+    },
+    {
+        "province": "Mahajanga",
+        "region": "MELAKY",
+        "numero_district": 72,
+        "district": "Maintirano"
+    },
+    {
+        "province": "Mahajanga",
+        "region": "MELAKY",
+        "numero_district": 73,
+        "district": "Morafenobe"
+    },
+    {
+        "province": "Mahajanga",
+        "region": "SOFIA",
+        "numero_district": 74,
+        "district": "Analalava"
+    },
+    {
+        "province": "Mahajanga",
+        "region": "SOFIA",
+        "numero_district": 75,
+        "district": "Antsohihy"
+    },
+    {
+        "province": "Mahajanga",
+        "region": "SOFIA",
+        "numero_district": 76,
+        "district": "Bealanana"
+    },
+    {
+        "province": "Mahajanga",
+        "region": "SOFIA",
+        "numero_district": 77,
+        "district": "Befandriana Nord"
+    },
+    {
+        "province": "Mahajanga",
+        "region": "SOFIA",
+        "numero_district": 78,
+        "district": "Mampikony"
+    },
+    {
+        "province": "Mahajanga",
+        "region": "SOFIA",
+        "numero_district": 79,
+        "district": "Mandritsara"
+    },
+    {
+        "province": "Mahajanga",
+        "region": "SOFIA",
+        "numero_district": 80,
+        "district": "Port-Bergé (Boriziny)"
+    },
+    {
+        "province": "Toamasina",
+        "region": "ALAOTRA-MANGORO",
+        "numero_district": 81,
+        "district": "Ambatondrazaka"
+    },
+    {
+        "province": "Toamasina",
+        "region": "ALAOTRA-MANGORO",
+        "numero_district": 82,
+        "district": "Amparafaravola"
+    },
+    {
+        "province": "Toamasina",
+        "region": "ALAOTRA-MANGORO",
+        "numero_district": 83,
+        "district": "Andilamena"
+    },
+    {
+        "province": "Toamasina",
+        "region": "ALAOTRA-MANGORO",
+        "numero_district": 84,
+        "district": "Anosibe An'ala"
+    },
+    {
+        "province": "Toamasina",
+        "region": "ALAOTRA-MANGORO",
+        "numero_district": 85,
+        "district": "Moramanga"
+    },
+    {
+        "province": "Toamasina",
+        "region": "ANALANJIROFO",
+        "numero_district": 86,
+        "district": "Fenerive Est"
+    },
+    {
+        "province": "Toamasina",
+        "region": "ANALANJIROFO",
+        "numero_district": 87,
+        "district": "Mananara-Nord"
+    },
+    {
+        "province": "Toamasina",
+        "region": "ANALANJIROFO",
+        "numero_district": 88,
+        "district": "Maroantsetra"
+    },
+    {
+        "province": "Toamasina",
+        "region": "ANALANJIROFO",
+        "numero_district": 89,
+        "district": "Sainte Marie"
+    },
+    {
+        "province": "Toamasina",
+        "region": "ANALANJIROFO",
+        "numero_district": 90,
+        "district": "Soanierana Ivongo"
+    },
+    {
+        "province": "Toamasina",
+        "region": "ANALANJIROFO",
+        "numero_district": 91,
+        "district": "Vavatenina"
+    },
+    {
+        "province": "Toamasina",
+        "region": "ATSINANANA",
+        "numero_district": 92,
+        "district": "Antanambao Manampontsy"
+    },
+    {
+        "province": "Toamasina",
+        "region": "ATSINANANA",
+        "numero_district": 93,
+        "district": "Brickaville"
+    },
+    {
+        "province": "Toamasina",
+        "region": "ATSINANANA",
+        "numero_district": 94,
+        "district": "Mahanoro"
+    },
+    {
+        "province": "Toamasina",
+        "region": "ATSINANANA",
+        "numero_district": 95,
+        "district": "Marolambo"
+    },
+    {
+        "province": "Toamasina",
+        "region": "ATSINANANA",
+        "numero_district": 96,
+        "district": "Toamasina I"
+    },
+    {
+        "province": "Toamasina",
+        "region": "ATSINANANA",
+        "numero_district": 97,
+        "district": "Toamasina II"
+    },
+    {
+        "province": "Toamasina",
+        "region": "ATSINANANA",
+        "numero_district": 98,
+        "district": "Vatomandry"
+    },
+    {
+        "province": "Toliara",
+        "region": "ANDROY",
+        "numero_district": 99,
+        "district": "Ambovombe Androy"
+    },
+    {
+        "province": "Toliara",
+        "region": "ANDROY",
+        "numero_district": 100,
+        "district": "Bekily"
+    },
+    {
+        "province": "Toliara",
+        "region": "ANDROY",
+        "numero_district": 101,
+        "district": "Beloha Androy"
+    },
+    {
+        "province": "Toliara",
+        "region": "ANDROY",
+        "numero_district": 102,
+        "district": "Tsihombe"
+    },
+    {
+        "province": "Toliara",
+        "region": "ANOSY",
+        "numero_district": 103,
+        "district": "Amboasary Sud"
+    },
+    {
+        "province": "Toliara",
+        "region": "ANOSY",
+        "numero_district": 104,
+        "district": "Betroka"
+    },
+    {
+        "province": "Toliara",
+        "region": "ANOSY",
+        "numero_district": 105,
+        "district": "Taolagnaro (Fort-Dauphin)"
+    },
+    {
+        "province": "Toliara",
+        "region": "ATSIMO-ANDREFANA",
+        "numero_district": 106,
+        "district": "Ampanihy Ouest"
+    },
+    {
+        "province": "Toliara",
+        "region": "ATSIMO-ANDREFANA",
+        "numero_district": 107,
+        "district": "Ankazoabo Sud"
+    },
+    {
+        "province": "Toliara",
+        "region": "ATSIMO-ANDREFANA",
+        "numero_district": 108,
+        "district": "Benenitra"
+    },
+    {
+        "province": "Toliara",
+        "region": "ATSIMO-ANDREFANA",
+        "numero_district": 109,
+        "district": "Beroroha"
+    },
+    {
+        "province": "Toliara",
+        "region": "ATSIMO-ANDREFANA",
+        "numero_district": 110,
+        "district": "Betioky Sud"
+    },
+    {
+        "province": "Toliara",
+        "region": "ATSIMO-ANDREFANA",
+        "numero_district": 111,
+        "district": "Morombe"
+    },
+    {
+        "province": "Toliara",
+        "region": "ATSIMO-ANDREFANA",
+        "numero_district": 112,
+        "district": "Sakaraha"
+    },
+    {
+        "province": "Toliara",
+        "region": "ATSIMO-ANDREFANA",
+        "numero_district": 113,
+        "district": "Toliara I"
+    },
+    {
+        "province": "Toliara",
+        "region": "ATSIMO-ANDREFANA",
+        "numero_district": 114,
+        "district": "Toliara II"
+    },
+    {
+        "province": "Toliara",
+        "region": "MENABE",
+        "numero_district": 115,
+        "district": "Belo sur Tsiribihina"
+    },
+    {
+        "province": "Toliara",
+        "region": "MENABE",
+        "numero_district": 116,
+        "district": "Mahabo"
+    },
+    {
+        "province": "Toliara",
+        "region": "MENABE",
+        "numero_district": 117,
+        "district": "Manja"
+    },
+    {
+        "province": "Toliara",
+        "region": "MENABE",
+        "numero_district": 118,
+        "district": "Miandrivazo"
+    },
+    {
+        "province": "Toliara",
+        "region": "MENABE",
+        "numero_district": 119,
+        "district": "Morondava"
+    }
+]
