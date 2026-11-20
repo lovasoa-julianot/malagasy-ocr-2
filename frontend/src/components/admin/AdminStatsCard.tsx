@@ -10,6 +10,8 @@ interface AdminStatsCardProps {
   trend?: {
     value: string;
     positive: boolean;
+    /** Libellé de la période de référence (ex. « vs 30 jours précédents »). */
+    label?: string;
   };
   onClick?: () => void;
 }
@@ -71,7 +73,9 @@ export default function AdminStatsCard({
                   -{trend.value}
                 </span>
               )}
-              <span className="text-base-content/40">vs mois dernier</span>
+              <span className="text-base-content/40">
+                {trend.label || "vs mois dernier"}
+              </span>
             </div>
           )}
         </div>

@@ -45,6 +45,55 @@ interface OCRData {
   date_delivrance: string;
 }
 
+/**
+ * Champs comparés entre la sortie brute de l'OCR et la fiche
+ * effectivement validée par l'agent. La part de champs
+ * inchangés mesure la précision réelle de la lecture.
+ */
+const CHAMPS_EVALUES_OCR: (keyof OCRData)[] = [
+  "nom",
+  "prenoms",
+  "sexe",
+  "date_naissance",
+  "lieu_naissance",
+  "numero_cin",
+  "rang",
+  "profession",
+  "nom_pere",
+  "nom_mere",
+  "lieu_delivrance",
+  "date_delivrance",
+];
+
+function normaliser(valeur: string) {
+  return valeur.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function calculerPrecisionOcr(
+  brut: OCRData | null,
+  final: OCRData,
+): number | null {
+  if (!brut) return null;
+
+  const compares = CHAMPS_EVALUES_OCR.filter((champ) => {
+    const reference = normaliser(brut[champ] ?? "");
+    const soumis = normaliser(final[champ] ?? "");
+
+    // Un champ vide des deux côtés n'apporte aucune
+    // information sur la qualité de la lecture.
+    return reference !== "" || soumis !== "";
+  });
+
+  if (compares.length === 0) return null;
+
+  const inchanges = compares.filter(
+    (champ) =>
+      normaliser(brut[champ] ?? "") === normaliser(final[champ] ?? ""),
+  ).length;
+
+  return Math.round((inchanges / compares.length) * 100);
+}
+
 export default function NouveauRecensement() {
   const navigate = useNavigate();
   const { agent } = useAuth();
@@ -64,6 +113,13 @@ export default function NouveauRecensement() {
   const [numeroKarine, setNumeroKarine] = useState("");
 
   const [ocrData, setOcrData] = useState<OCRData | null>(null);
+
+  /*
+   * Sortie brute de l'OCR, conservée séparément des champs
+   * éditables afin de mesurer la précision de la lecture
+   * lors de l'enregistrement de la fiche.
+   */
+  const [ocrBrut, setOcrBrut] = useState<OCRData | null>(null);
 
   const [isSaving, setIsSaving] = useState(false);
 
@@ -144,7 +200,7 @@ export default function NouveauRecensement() {
     try {
       const result = await extractCIN(files.recto, files.verso);
 
-      setOcrData({
+      const donnees: OCRData = {
         nom: result.nom ?? "",
         prenoms: result.prenoms ?? "",
         sexe: result.sexe ?? "",
@@ -157,7 +213,10 @@ export default function NouveauRecensement() {
         nom_mere: result.nom_mere ?? "",
         lieu_delivrance: result.lieu_delivrance ?? "",
         date_delivrance: result.date_delivrance ?? "",
-      });
+      };
+
+      setOcrBrut(donnees);
+      setOcrData(donnees);
 
       setStep("verification");
     } catch (error) {
@@ -226,6 +285,8 @@ export default function NouveauRecensement() {
         date_delivrance: ocrData.date_delivrance.trim() || null,
 
         date_recensement_terrain: new Date().toISOString().slice(0, 10),
+
+        ocr_confidence: calculerPrecisionOcr(ocrBrut, ocrData),
       });
 
       setRegistrationResult({
@@ -268,6 +329,7 @@ export default function NouveauRecensement() {
 
     setNumeroKarine("");
     setOcrData(null);
+    setOcrBrut(null);
     setRegistrationResult(null);
     setError(null);
     setStep("documents");

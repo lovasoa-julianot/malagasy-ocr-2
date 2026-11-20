@@ -13,13 +13,14 @@ import {
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { MadagascarEmblem } from "./MadagascarEmblem";
 
 interface ChefFokontanyLoginProps {
   onBack?: () => void;
 }
 
-export default function ChefFokontanyLogin({ onBack }: ChefFokontanyLoginProps) {
+export default function ChefFokontanyLogin({
+  onBack,
+}: ChefFokontanyLoginProps) {
   const navigate = useNavigate();
   const { chefLogin } = useAuth();
 
@@ -101,9 +102,9 @@ export default function ChefFokontanyLogin({ onBack }: ChefFokontanyLoginProps) 
         </button>
 
         {/* Emblème */}
-        <div className="mb-6">
+        {/* <div className="mb-6">
           <MadagascarEmblem variant="light" />
-        </div>
+        </div> */}
 
         {/* Carte principale */}
         <div className="auth-card rounded-3xl border border-slate-800/80 bg-slate-900/90 p-6 sm:p-8 shadow-2xl shadow-black/60 backdrop-blur-xl">
@@ -244,7 +245,8 @@ export default function ChefFokontanyLogin({ onBack }: ChefFokontanyLoginProps) 
                   Nouveau Chef Fokontany ?
                 </p>
                 <p className="mt-0.5 text-[11px] leading-4 text-slate-400">
-                  Transmettez votre demande d'adhésion officielle pour rattacher votre Fokontany.
+                  Transmettez votre demande d'adhésion officielle pour rattacher
+                  votre Fokontany.
                 </p>
                 <Link
                   to="/leader/subscription"
@@ -261,7 +263,9 @@ export default function ChefFokontanyLogin({ onBack }: ChefFokontanyLoginProps) 
         {/* Note sécurité */}
         <div className="mt-6 flex items-center justify-center gap-2 text-center text-xs text-slate-500">
           <ShieldCheck size={13} className="text-emerald-500" />
-          <span>Registre administratif certifié • Ministère de l'Intérieur</span>
+          <span>
+            Registre administratif certifié • Ministère de l'Intérieur
+          </span>
         </div>
       </div>
     </div>

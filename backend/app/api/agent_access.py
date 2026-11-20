@@ -1,4 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    Request,
+    Response,
+    status,
+)
 from sqlalchemy import select, Select
 from sqlalchemy.orm import Session
 
@@ -15,11 +22,15 @@ from app.schemas.agent import (
     FokontanyAccessResponse,
 )
 from app.services.agent_service import generate_agent_matricule
+from app.services.audit_service import (
+    OUTCOME_SUCCESS,
+    log_action,
+    log_login_failure,
+)
 from app.core.security import create_access_token
 from app.api.dependancy import get_current_agent
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.core.security import decode_access_token
-from fastapi import Response
 
 security = HTTPBearer()
 
@@ -153,6 +164,7 @@ def get_registration_token(
 )
 def register_agent(
     data: AgentRegisterRequest,
+    request: Request,
     db: Session = Depends(get_db),
     registration_data: dict = Depends(get_registration_token),
 ):
@@ -205,6 +217,24 @@ def register_agent(
     )
 
     db.add(agent)
+    db.flush()
+
+    log_action(
+        db,
+        action="CREATE",
+        resource_type="AGENT",
+        resource_id=agent.id,
+        agent_id=agent.id,
+        fokontany_id=fokontany.id,
+        outcome=OUTCOME_SUCCESS,
+        details=(
+            f"Enregistrement de l'agent {agent.matricule} "
+            f"({agent.nom} {agent.prenoms}) sur le Fokontany "
+            f"{fokontany.nom} ({fokontany.code})."
+        ),
+        request=request,
+    )
+
     db.commit()
     db.refresh(agent)
 
@@ -218,6 +248,7 @@ def register_agent(
 )
 def agent_login(
     data: AgentAccessRequest,
+    request: Request,
     response: Response,
     db: Session = Depends(get_db),
 ):
@@ -229,12 +260,38 @@ def agent_login(
     )
 
     if not agent:
+        log_login_failure(
+            db,
+            identifier=data.matricule,
+            fokontany_id=data.fokontany_id,
+            request=request,
+            details=(
+                "Tentative de connexion agent refusée : "
+                f"matricule {data.matricule} inconnu pour "
+                "le Fokontany sélectionné."
+            ),
+        )
+
+        db.commit()
+
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Matricule incorrect",
         )
 
     if not agent.is_active:
+        log_login_failure(
+            db,
+            identifier=data.matricule,
+            request=request,
+            details=(
+                "Tentative de connexion agent refusée : "
+                f"compte {agent.matricule} désactivé."
+            ),
+        )
+
+        db.commit()
+
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Compte agent désactivé",
@@ -255,6 +312,23 @@ def agent_login(
         path="/",
         max_age=60 * 60 * 24,
     )
+
+    log_action(
+        db,
+        action="LOGIN",
+        resource_type="SYSTEM",
+        resource_id=agent.id,
+        agent_id=agent.id,
+        fokontany_id=agent.fokontany_id,
+        outcome=OUTCOME_SUCCESS,
+        details=(
+            f"Connexion de l'agent {agent.matricule} "
+            f"({agent.nom} {agent.prenoms}) sur le terrain."
+        ),
+        request=request,
+    )
+
+    db.commit()
 
     return AgentLoginResponse(
         access_token=token,

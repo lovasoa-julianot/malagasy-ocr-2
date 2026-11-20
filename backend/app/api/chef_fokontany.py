@@ -1,7 +1,7 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.orm import Session
 
 from app.api.dependancy import require_admin
@@ -38,28 +38,43 @@ router = APIRouter(
 )
 def register_chef_fokontany(
     data: ChefFokontanyRegisterRequest,
+    request: Request,
     db: Session = Depends(get_db),
 ):
     """
     Soumet une demande d'inscription Chef Fokontany.
 
+    Le code Fokontany est attribué par le serveur selon la
+    norme FKT-<lettre du district>-<7 chiffres> ; le demandeur
+    ne le saisit plus.
+
     La demande est créée avec le statut EN_ATTENTE.
     Elle devra être validée par un administrateur.
     """
 
-    request = ChefFokontanyService.register_request(
+    chef_request = ChefFokontanyService.register_request(
         db=db,
         data=data,
+        request_payload=request,
     )
 
     return ChefFokontanyRegisterResponse(
         success=True,
-        request_id=request.id,
-        statut=request.statut.value,
+        request_id=chef_request.id,
+        statut=chef_request.statut.value,
         message=(
             "Votre demande a été enregistrée. "
             "Elle sera vérifiée et validée par un administrateur."
         ),
+        code_fokontany=chef_request.code_fokontany,
+        nom_fokontany=chef_request.nom_fokontany,
+        commune=chef_request.commune,
+        district=chef_request.district,
+        region=chef_request.region,
+        province=chef_request.province,
+        nom=chef_request.nom,
+        prenoms=chef_request.prenoms,
+        created_at=chef_request.created_at,
     )
 
 

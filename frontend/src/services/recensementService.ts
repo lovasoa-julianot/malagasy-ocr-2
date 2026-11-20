@@ -20,7 +20,7 @@ export interface RecensementHistoryItem {
     | "REJETE";
 }
 
-const API_URL = import.meta.env.VITE_API_URL || "";
+const API_URL = (import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || "").replace(/\/$/, "");
 
 export async function createRecensement(
   data: RecensementCreate,

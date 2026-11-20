@@ -17,7 +17,7 @@ export interface AgentDashboardData {
   recentActivity: RecentActivity[];
 }
 
-const API_URL = import.meta.env.VITE_API_URL || "";
+const API_URL = (import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || "").replace(/\/$/, "");
 
 export async function getAgentDashboard(): Promise<AgentDashboardData> {
   const response = await fetch(`${API_URL}/api/agent/dashboard`, {

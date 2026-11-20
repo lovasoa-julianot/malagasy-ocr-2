@@ -19,6 +19,11 @@ export interface RecensementCreate {
   lot_logement?: string | null;
   quartier_secteur?: string | null;
   date_recensement_terrain?: string | null;
+  /**
+   * Précision de la lecture OCR mesurée par l'agent :
+   * part des champs laissés inchangés après relecture (0 à 100).
+   */
+  ocr_confidence?: number | null;
 }
 
 export interface RecensementResponse {

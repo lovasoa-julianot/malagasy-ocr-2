@@ -225,3 +225,58 @@ def require_chef(
     current_chef: Utilisateur = Depends(get_current_chef),
 ) -> Utilisateur:
     return current_chef
+
+
+def get_optional_actor(
+    credentials: HTTPAuthorizationCredentials | None = Depends(
+        security
+    ),
+    access_token: str | None = Cookie(
+        default=None,
+        alias=ACCESS_TOKEN_COOKIE,
+    ),
+    db: Session = Depends(get_db),
+) -> Utilisateur | Agent | None:
+    """
+    Résout l'acteur peu importe son rôle (administrateur,
+    chef Fokontany ou agent) sans jamais lever d'exception.
+
+    Utilisé par les parcours communs aux trois rôles, comme
+    la déconnexion, où l'absence de session valide est un cas
+    normal et non une erreur.
+    """
+
+    token = None
+
+    if credentials:
+        token = credentials.credentials
+    elif access_token:
+        token = access_token
+
+    if not token:
+        return None
+
+    try:
+        payload = decode_access_token(token)
+    except HTTPException:
+        return None
+
+    subject = payload.get("sub")
+
+    if not subject:
+        return None
+
+    try:
+        actor_id = UUID(subject)
+    except ValueError:
+        return None
+
+    token_type = payload.get("type")
+
+    if token_type == "AGENT":
+        return db.get(Agent, actor_id)
+
+    if token_type in {"ADMIN", "CHEF_FOKONTANY"}:
+        return db.get(Utilisateur, actor_id)
+
+    return None

@@ -249,25 +249,25 @@
         "province": "Fianarantsoa",
         "region": "HAUTE MATSIATRA",
         "numero_district": 47,
-        "district": "Ikalamavony"
-    },
-    {
-        "province": "Fianarantsoa",
-        "region": "HAUTE MATSIATRA",
-        "numero_district": 48,
         "district": "Isandra"
     },
     {
         "province": "Fianarantsoa",
         "region": "HAUTE MATSIATRA",
+        "numero_district": 48,
+        "district": "Ikalamavony"
+    },
+    {
+        "province": "Fianarantsoa",
+        "region": "HAUTE MATSIATRA",
         "numero_district": 49,
-        "district": "Lalangina"
+        "district": "Vohibato"
     },
     {
         "province": "Fianarantsoa",
         "region": "HAUTE MATSIATRA",
         "numero_district": 50,
-        "district": "Vohibato"
+        "district": "Lalangina"
     },
     {
         "province": "Fianarantsoa",
@@ -289,37 +289,37 @@
     },
     {
         "province": "Fianarantsoa",
-        "region": "VATOVAVY & FITOVINANY",
+        "region": "VATOVAVY",
         "numero_district": 54,
         "district": "Ifanadiana"
     },
     {
         "province": "Fianarantsoa",
-        "region": "VATOVAVY & FITOVINANY",
+        "region": "FITOVINANY",
         "numero_district": 55,
         "district": "Ikongo"
     },
     {
         "province": "Fianarantsoa",
-        "region": "VATOVAVY & FITOVINANY",
+        "region": "FITOVINANY",
         "numero_district": 56,
         "district": "Manakara"
     },
     {
         "province": "Fianarantsoa",
-        "region": "VATOVAVY & FITOVINANY",
+        "region": "VATOVAVY",
         "numero_district": 57,
         "district": "Mananjary"
     },
     {
         "province": "Fianarantsoa",
-        "region": "VATOVAVY & FITOVINANY",
+        "region": "VATOVAVY",
         "numero_district": 58,
         "district": "Nosy Varika"
     },
     {
         "province": "Fianarantsoa",
-        "region": "VATOVAVY & FITOVINANY",
+        "region": "FITOVINANY",
         "numero_district": 59,
         "district": "Vohipeno"
     },
@@ -447,7 +447,7 @@
         "province": "Mahajanga",
         "region": "SOFIA",
         "numero_district": 80,
-        "district": "Port-Bergé (Boriziny)"
+        "district": "Port-Berge"
     },
     {
         "province": "Toamasina",
@@ -597,7 +597,7 @@
         "province": "Toliara",
         "region": "ANOSY",
         "numero_district": 105,
-        "district": "Taolagnaro (Fort-Dauphin)"
+        "district": "Taolanaro"
     },
     {
         "province": "Toliara",

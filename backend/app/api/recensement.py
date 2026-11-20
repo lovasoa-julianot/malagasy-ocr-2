@@ -10,10 +10,13 @@ from app.db.database import get_db
 from app.models.agent import Agent
 from app.models.personne import Personne
 from app.models.recensement import Recensement, RecensementStatus
-from app.models.audit_log import AuditLog
 from app.schemas.recensement import (
     RecensementCreate,
     RecensementResponse,
+)
+from app.services.audit_service import (
+    OUTCOME_SUCCESS,
+    log_action,
 )
 from sqlalchemy import text
 
@@ -222,6 +225,8 @@ def create_recensement(
 
         date_recensement_terrain=date_recensement_terrain,
 
+        ocr_confidence=data.ocr_confidence,
+
         validated_at=datetime.now(timezone.utc),
         qr_generated_at=datetime.now(timezone.utc),
     )
@@ -235,21 +240,31 @@ def create_recensement(
     # 8. Audit
     # =========================================================
 
-    audit_log = AuditLog(
-        agent_id=current_agent.id,
-        fokontany_id=current_agent.fokontany_id,
+    confidence_label = (
+        f" Précision OCR mesurée : "
+        f"{round(data.ocr_confidence, 1)}%."
+        if data.ocr_confidence is not None
+        else ""
+    )
+
+    log_action(
+        db,
         action="CREATE",
         resource_type="RECENSEMENT",
         resource_id=recensement.id,
-        ip_address=(
-            request.client.host
-            if request.client
-            else None
+        agent_id=current_agent.id,
+        fokontany_id=current_agent.fokontany_id,
+        outcome=OUTCOME_SUCCESS,
+        details=(
+            f"Enregistrement du recensement "
+            f"{recensement.numero_fiche} pour {nom} {prenoms} "
+            f"(CIN {numero_cin}) par l'agent "
+            f"{current_agent.matricule} "
+            f"{current_agent.nom} {current_agent.prenoms}."
+            f"{confidence_label}"
         ),
-        user_agent=request.headers.get("user-agent"),
+        request=request,
     )
-
-    db.add(audit_log)
 
     # =========================================================
     # 9. Transaction

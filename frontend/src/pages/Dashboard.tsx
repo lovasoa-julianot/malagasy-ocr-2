@@ -160,41 +160,79 @@ export default function Dashboard() {
       </section>
 
       {/* Fokontany information */}
-      <section className="rounded-2xl border border-blue-500/10 bg-linear-to-r from-blue-600/10 via-slate-900 to-slate-900 p-5">
-        <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400">
-              <MapPin size={22} />
+      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex flex-col lg:flex-row">
+          {/* Fokontany principal */}
+          <div className="flex flex-1 items-center gap-4 bg-gradient-to-r from-blue-50 via-blue-50/80 to-slate-100 p-5 lg:p-6">
+            {/* Icon */}
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-blue-100 text-blue-500">
+              <MapPin size={25} strokeWidth={2} />
             </div>
 
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
+            {/* Informations Fokontany */}
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Fokontany affecté
               </p>
 
-              <h2 className="mt-1 text-lg font-bold text-white">
-                {agent.fokontany?.nom}
+              <h2 className="mt-1 truncate text-xl font-bold text-slate-900">
+                {agent.fokontany?.nom || "Fokontany non renseigné"}
               </h2>
 
-              <p className="mt-1 text-sm text-slate-400">
-                {agent.fokontany?.commune} · {agent.fokontany?.district}
+              <p className="mt-1 text-sm font-medium text-slate-500">
+                {agent.fokontany?.commune || "—"}
+                {" · "}
+                {agent.fokontany?.district || "—"}
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-6 border-t border-slate-800 pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0">
-            <div>
-              <p className="text-xs text-slate-500">Code</p>
-              <p className="mt-1 font-semibold text-slate-200">
-                {agent.fokontany?.code}
-              </p>
-            </div>
+          {/* Informations territoriales */}
+          <div className="bg-slate-900 px-5 py-5 text-white lg:w-[42%] lg:px-7 lg:py-6">
+            <div className="grid grid-cols-2 gap-x-6 gap-y-5">
+              {/* Code */}
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                  Code
+                </p>
 
-            <div>
-              <p className="text-xs text-slate-500">Région</p>
-              <p className="mt-1 font-semibold text-slate-200">
-                {agent.fokontany?.region}
-              </p>
+                <p className="mt-1.5 truncate text-sm font-bold text-white">
+                  {agent.fokontany?.code || "—"}
+                </p>
+              </div>
+
+              {/* Région */}
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                  Région
+                </p>
+
+                <p className="mt-1.5 truncate text-sm font-bold text-white">
+                  {agent.fokontany?.region || "—"}
+                </p>
+              </div>
+
+              {/* Commune */}
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                  Commune
+                </p>
+
+                <p className="mt-1.5 truncate text-sm font-semibold text-slate-200">
+                  {agent.fokontany?.commune || "—"}
+                </p>
+              </div>
+
+              {/* District */}
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                  District
+                </p>
+
+                <p className="mt-1.5 truncate text-sm font-semibold text-slate-200">
+                  {agent.fokontany?.district || "—"}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -320,10 +358,7 @@ export default function Dashboard() {
 
               <InfoRow label="Matricule" value={agent.matricule} />
 
-              <InfoRow
-                label="Téléphone"
-                value={agent.telephone ?? "—"}
-              />
+              <InfoRow label="Téléphone" value={agent.telephone ?? "—"} />
             </div>
           </div>
         </div>

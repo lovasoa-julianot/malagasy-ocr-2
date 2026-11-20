@@ -1,6 +1,6 @@
 import type { CINExtractedData, OCRResult } from "../types/ocr";
 
-const API_URL = import.meta.env.VITE_API_URL || "";
+const API_URL = (import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || "").replace(/\/$/, "");
 
 export async function extractCIN(
   recto: File,

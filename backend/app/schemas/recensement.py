@@ -33,6 +33,15 @@ class RecensementCreate(BaseModel):
     numero_karine: str | None = None
     date_recensement_terrain: str | None = None
 
+    # Précision de la lecture OCR, mesurée par l'agent :
+    # part des champs de la CIN laissés inchangés après
+    # relecture, exprimée en pourcentage (0 à 100).
+    ocr_confidence: float | None = Field(
+        default=None,
+        ge=0,
+        le=100,
+    )
+
 
 class RecensementResponse(BaseModel):
     success: bool

@@ -19,7 +19,7 @@ from app.schemas.chef_portal import (
     ChefRecensementItem,
     CitizenItem,
 )
-from app.services.audit_service import log_action
+from app.services.audit_service import OUTCOME_SUCCESS, log_action
 from app.services.chef_fokontany_service import (
     generate_fokontany_access_code,
 )
@@ -401,7 +401,9 @@ class ChefPortalService:
             resource_type="AGENT",
             resource_id=agent.id,
             agent_id=agent.id,
+            utilisateur_id=chef.id,
             fokontany_id=fokontany.id,
+            outcome=OUTCOME_SUCCESS,
             details=(
                 f"{'Activation' if is_active else 'Désactivation'} "
                 f"de l'agent {agent.matricule} "
@@ -543,7 +545,9 @@ class ChefPortalService:
             action="VALIDATE" if target == RecensementStatus.VALIDE else "REJECT",
             resource_type="RECENSEMENT",
             resource_id=recensement.id,
+            utilisateur_id=chef.id,
             fokontany_id=fokontany.id,
+            outcome=OUTCOME_SUCCESS,
             details=(
                 f"Recensement {recensement.numero_fiche} : "
                 f"{previous} -> {target.value} "
@@ -689,7 +693,9 @@ class ChefPortalService:
             action="UPDATE",
             resource_type="FOKONTANY",
             resource_id=fokontany.id,
+            utilisateur_id=chef.id,
             fokontany_id=fokontany.id,
+            outcome=OUTCOME_SUCCESS,
             details=(
                 "Régénération du code d'accès du Fokontany "
                 f"{fokontany.code} par {chef.nom} {chef.prenoms}."

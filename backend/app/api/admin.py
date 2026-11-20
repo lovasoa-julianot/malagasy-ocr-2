@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -12,15 +13,22 @@ from app.schemas.admin import (
     AdminAgentItem,
     AdminAgentToggleRequest,
     AdminAgentToggleResponse,
-    AdminAuditLogItem,
+    AdminAuditLogMeta,
+    AdminAuditLogPage,
+    AdminAuditStatsResponse,
     AdminDashboardStatsResponse,
     AdminFokontanyStatItem,
     AdminRecensementItem,
     AdminRecensementStatusRequest,
     AdminRecensementStatusResponse,
+    AdminStatistiquesResponse,
     QualityAlertItem,
 )
 from app.services.admin_service import AdminService
+from app.services.analytics_service import (
+    PERIODE_MONTH,
+    AnalyticsService,
+)
 
 
 router = APIRouter(
@@ -196,14 +204,97 @@ def update_recensement_status(
 
 @router.get(
     "/audit-logs",
-    response_model=list[AdminAuditLogItem],
+    response_model=AdminAuditLogPage,
 )
 def list_audit_logs(
-    limit: int = Query(default=200, ge=1, le=1000),
+    action: str | None = Query(default=None),
+    resource_type: str | None = Query(default=None),
+    user_type: str | None = Query(default=None),
+    outcome: str | None = Query(default=None),
+    fokontany_id: UUID | None = Query(default=None),
+    date_debut: datetime | None = Query(default=None),
+    date_fin: datetime | None = Query(default=None),
+    search: str | None = Query(default=None),
+    limit: int = Query(default=25, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
     db: Session = Depends(get_db),
     admin: Utilisateur = Depends(require_admin),
 ):
-    return AdminService.list_audit_logs(db, limit=limit)
+    """
+    Journal d'audit paginé et filtrable.
+
+    Le filtrage est appliqué en base : la pagination reste
+    cohérente quel que soit le nombre d'événements.
+    """
+
+    return AdminService.list_audit_logs(
+        db,
+        action=action,
+        resource_type=resource_type,
+        user_type=user_type,
+        outcome=outcome,
+        fokontany_id=fokontany_id,
+        date_debut=date_debut,
+        date_fin=date_fin,
+        search=search,
+        limit=limit,
+        offset=offset,
+    )
+
+
+@router.get(
+    "/audit-logs/meta",
+    response_model=AdminAuditLogMeta,
+)
+def get_audit_logs_meta(
+    db: Session = Depends(get_db),
+    admin: Utilisateur = Depends(require_admin),
+):
+    """
+    Valeurs disponibles pour les filtres du journal
+    (actions, ressources, profils et territoires).
+    """
+
+    return AdminService.audit_log_meta(db)
+
+
+# ============================================================
+# STATISTIQUES & KPIs
+# ============================================================
+
+@router.get(
+    "/statistiques",
+    response_model=AdminStatistiquesResponse,
+)
+def get_admin_statistiques(
+    periode: str = Query(default=PERIODE_MONTH),
+    db: Session = Depends(get_db),
+    admin: Utilisateur = Depends(require_admin),
+):
+    """
+    Indicateurs de pilotage calculés à partir des fiches
+    réellement enregistrées.
+
+    Périodes acceptées : WEEK, MONTH, GLOBAL.
+    """
+
+    return AnalyticsService.statistiques(db, periode=periode)
+
+
+@router.get(
+    "/statistiques/audit",
+    response_model=AdminAuditStatsResponse,
+)
+def get_admin_statistiques_audit(
+    periode: str = Query(default=PERIODE_MONTH),
+    db: Session = Depends(get_db),
+    admin: Utilisateur = Depends(require_admin),
+):
+    """
+    Agrégats du journal d'audit sur la période demandée.
+    """
+
+    return AnalyticsService.audit_stats(db, periode=periode)
 
 
 # ============================================================

@@ -4,7 +4,7 @@ import string
 from datetime import datetime, timezone
 from uuid import UUID
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -20,7 +20,10 @@ from app.schemas.chef_fokontany import (
     ChefFokontanyRegisterRequest,
     ChefFokontanyRejectRequest,
 )
-from app.services.audit_service import log_action
+from app.services.audit_service import OUTCOME_SUCCESS, log_action
+from app.services.fokontany_code_service import (
+    generer_code_fokontany,
+)
 from app.data.madagascar_administrative import validate_district
 
 
@@ -46,6 +49,7 @@ class ChefFokontanyService:
     def register_request(
         db: Session,
         data: ChefFokontanyRegisterRequest,
+        request_payload: Request | None = None,
     ) -> ChefFokontanyRequest:
 
         if not validate_district(
@@ -64,7 +68,17 @@ class ChefFokontanyService:
             )
 
         email = str(data.email).strip().lower()
-        code_fokontany = data.code_fokontany.strip().upper()
+
+        # ---------------------------------------------------------
+        # Le code Fokontany est attribué par le serveur selon la
+        # norme FKT-<lettre du district>-<7 chiffres>.
+        # Il n'est plus demandé au demandeur.
+        # ---------------------------------------------------------
+
+        code_fokontany = generer_code_fokontany(
+            db,
+            district=data.district,
+        )
 
         # ---------------------------------------------------------
         # Vérifier que l'email n'est pas déjà utilisé par un compte
@@ -103,7 +117,10 @@ class ChefFokontanyService:
             )
 
         # ---------------------------------------------------------
-        # Vérifier que le code Fokontany n'existe pas déjà
+        # La génération du code a déjà écarté les collisions
+        # avec un Fokontany existant ou une demande en attente.
+        # Ce contrôle reste en défense si une saisie manuelle
+        # intervene entre l'attribution et l'enregistrement.
         # ---------------------------------------------------------
         existing_fokontany = db.scalar(
             select(Fokontany).where(
@@ -161,6 +178,25 @@ class ChefFokontanyService:
 
         try:
             db.add(request)
+            db.flush()
+
+            log_action(
+                db,
+                action="CREATE",
+                resource_type="CHEF_REQUEST",
+                resource_id=request.id,
+                outcome=OUTCOME_SUCCESS,
+                details=(
+                    f"Demande d'inscription Chef Fokontany "
+                    f"déposée pour le territoire "
+                    f"{request.nom_fokontany} "
+                    f"({request.district}, {request.region}) "
+                    f"avec le code {code_fokontany}, "
+                    f"par {request.nom} {request.prenoms}."
+                ),
+                request=request_payload,
+            )
+
             db.commit()
             db.refresh(request)
 
@@ -320,7 +356,9 @@ class ChefFokontanyService:
             action="APPROVE",
             resource_type="CHEF_REQUEST",
             resource_id=request.id,
+            utilisateur_id=admin.id,
             fokontany_id=fokontany.id,
+            outcome=OUTCOME_SUCCESS,
             details=(
                 f"Approbation de la demande Chef Fokontany "
                 f"pour le territoire {fokontany.nom} "
@@ -372,6 +410,8 @@ class ChefFokontanyService:
             action="REJECT",
             resource_type="CHEF_REQUEST",
             resource_id=request.id,
+            utilisateur_id=admin.id,
+            outcome=OUTCOME_SUCCESS,
             details=(
                 f"Rejet de la demande Chef Fokontany "
                 f"pour le territoire {request.nom_fokontany} "

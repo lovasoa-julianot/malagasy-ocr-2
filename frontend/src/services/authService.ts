@@ -1,7 +1,7 @@
 import type { Agent } from "../types/agent";
 import type { AdminUser } from "../types/auth";
 
-const API_URL = import.meta.env.VITE_API_URL || "";
+const API_URL = (import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || "").replace(/\/$/, "");
 
 /* =========================================================
    ADMIN LOGIN
@@ -51,7 +51,7 @@ export async function adminLoginRequest(
 
 export interface AgentAccessResponse {
   access_granted: boolean;
-  registration_allowed: boolean;
+  registration_required: boolean;
   fokontany_id: string;
   fokontany_nom: string;
   registration_token?: string;

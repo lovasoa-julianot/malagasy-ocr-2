@@ -4,11 +4,16 @@ import type {
   ChefFokontanyRequestItem,
   AdminAgentItem,
   AdminRecensementItem,
-  AdminAuditLogItem,
+  AdminAuditLogMeta,
+  AdminAuditLogPage,
+  AdminAuditQueryParams,
+  AdminAuditStats,
+  AdminStatistiques,
   QualityAlertItem,
+  StatistiquesPeriode,
 } from "../types/admin";
 
-const API_URL = import.meta.env.VITE_API_URL || "";
+const API_URL = (import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || "").replace(/\/$/, "");
 
 async function readJson<T>(response: Response, fallbackMessage: string): Promise<T> {
   const data = await response.json().catch(() => null);
@@ -202,15 +207,44 @@ export async function updateRecensementStatusAdmin(
    JOURNAL D'AUDIT ET ALERTES QUALITE
 ========================================================= */
 
-export async function getAdminAuditLogs(): Promise<AdminAuditLogItem[]> {
-  const response = await fetch(`${API_URL}/api/admin/audit-logs`, {
+export async function getAdminAuditLogs(
+  params: AdminAuditQueryParams = {},
+): Promise<AdminAuditLogPage> {
+  const query = new URLSearchParams();
+
+  if (params.action) query.set("action", params.action);
+  if (params.resource_type) query.set("resource_type", params.resource_type);
+  if (params.user_type) query.set("user_type", params.user_type);
+  if (params.outcome) query.set("outcome", params.outcome);
+  if (params.fokontany_id) query.set("fokontany_id", params.fokontany_id);
+  if (params.search) query.set("search", params.search);
+  if (params.date_debut) query.set("date_debut", params.date_debut);
+  if (params.date_fin) query.set("date_fin", params.date_fin);
+  if (params.limit) query.set("limit", String(params.limit));
+  if (params.offset !== undefined) query.set("offset", String(params.offset));
+
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+
+  const response = await fetch(`${API_URL}/api/admin/audit-logs${suffix}`, {
     method: "GET",
     credentials: "include",
   });
 
-  return readJson<AdminAuditLogItem[]>(
+  return readJson<AdminAuditLogPage>(
     response,
     "Impossible de charger le journal d’audit.",
+  );
+}
+
+export async function getAdminAuditLogMeta(): Promise<AdminAuditLogMeta> {
+  const response = await fetch(`${API_URL}/api/admin/audit-logs/meta`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  return readJson<AdminAuditLogMeta>(
+    response,
+    "Impossible de charger les filtres du journal d’audit.",
   );
 }
 
@@ -241,5 +275,45 @@ export async function resolveQualityAlert(
   return readJson<{ success: boolean }>(
     response,
     "Impossible de marquer l’alerte comme traitée.",
+  );
+}
+
+/* =========================================================
+   STATISTIQUES & KPIs
+   GET /api/admin/statistiques
+   GET /api/admin/statistiques/audit
+   ========================================================= */
+
+export async function getAdminStatistiques(
+  periode: StatistiquesPeriode = "MONTH",
+): Promise<AdminStatistiques> {
+  const response = await fetch(
+    `${API_URL}/api/admin/statistiques?periode=${periode}`,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
+
+  return readJson<AdminStatistiques>(
+    response,
+    "Impossible de charger les statistiques.",
+  );
+}
+
+export async function getAdminStatistiquesAudit(
+  periode: StatistiquesPeriode = "MONTH",
+): Promise<AdminAuditStats> {
+  const response = await fetch(
+    `${API_URL}/api/admin/statistiques/audit?periode=${periode}`,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
+
+  return readJson<AdminAuditStats>(
+    response,
+    "Impossible de charger les agrégats du journal d’audit.",
   );
 }

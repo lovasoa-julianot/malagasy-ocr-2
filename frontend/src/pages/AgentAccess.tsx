@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 
 import { agentAccessRequest } from "../services/authService";
-import { MadagascarEmblem } from "./public/MadagascarEmblem";
 
 import AgentLogin from "./AgentLogin";
 import AgentRegistration from "./AgentRegistration";
@@ -30,6 +29,7 @@ export default function AgentAccess({ onBack }: AgentAccessProps) {
   const [fokontanyId, setFokontanyId] = useState("");
   const [fokontanyNom, setFokontanyNom] = useState("");
   const [registrationToken, setRegistrationToken] = useState("");
+  const [registrationRequired, setRegistrationRequired] = useState(false);
   const [registeredMatricule, setRegisteredMatricule] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -42,18 +42,21 @@ export default function AgentAccess({ onBack }: AgentAccessProps) {
     try {
       const result = await agentAccessRequest(code.trim(), codeAcces.trim());
 
+      if (!result.access_granted) {
+        throw new Error("Le serveur a refusé l'accès à ce Fokontany.");
+      }
+
       setFokontanyId(result.fokontany_id);
       setFokontanyNom(result.fokontany_nom);
-
-      if (!result.registration_token || !result.registration_allowed) {
-        throw new Error("Le serveur n'a pas autorisé l'inscription de l'agent.");
-      }
-      setRegistrationToken(result.registration_token);
+      setRegistrationRequired(result.registration_required);
+      setRegistrationToken(result.registration_token ?? "");
       setRegisteredMatricule("");
       setStep("choice");
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Impossible de valider l'accès au Fokontany.",
+        err instanceof Error
+          ? err.message
+          : "Impossible de valider l'accès au Fokontany.",
       );
     } finally {
       setLoading(false);
@@ -70,15 +73,51 @@ export default function AgentAccess({ onBack }: AgentAccessProps) {
     return (
       <div className="auth-page flex min-h-screen items-center justify-center bg-[#090D16] px-4 py-10 text-white">
         <section className="auth-card w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900 p-7 shadow-2xl">
-          <button type="button" onClick={() => setStep("access")} className="mb-5 text-sm text-slate-400 hover:text-white">← Changer de Fokontany</button>
+          <button
+            type="button"
+            onClick={() => setStep("access")}
+            className="mb-5 text-sm text-slate-400 hover:text-white"
+          >
+            ← Changer de Fokontany
+          </button>
           <h1 className="text-xl font-bold">Accès validé</h1>
-          <p className="mb-6 mt-1 text-sm text-slate-400">{fokontanyNom}. Choisissez votre situation.</p>
-          <button type="button" onClick={() => setStep("login")} className="mb-3 flex w-full items-center gap-3 rounded-xl border border-blue-500/30 bg-blue-500/10 p-4 text-left hover:bg-blue-500/15">
-            <UserRound className="text-blue-400"/><span><strong className="block">J’ai déjà un compte Agent</strong><small className="text-slate-400">Me connecter avec mon matricule</small></span>
+          <p className="mb-6 mt-1 text-sm text-slate-400">
+            {fokontanyNom}. Choisissez votre situation.
+          </p>
+          <button
+            type="button"
+            onClick={() => setStep("login")}
+            className="mb-3 flex w-full items-center gap-3 rounded-xl border border-blue-500/30 bg-blue-500/10 p-4 text-left hover:bg-blue-500/15"
+          >
+            <UserRound className="text-blue-400" />
+            <span>
+              <strong className="block">J’ai déjà un compte Agent</strong>
+              <small className="text-slate-400">
+                Me connecter avec mon matricule
+              </small>
+            </span>
           </button>
-          <button type="button" onClick={() => setStep("registration")} className="flex w-full items-center gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-left hover:bg-emerald-500/15">
-            <UserPlus className="text-emerald-400"/><span><strong className="block">Première utilisation</strong><small className="text-slate-400">Créer mon compte Agent et obtenir un matricule</small></span>
-          </button>
+          {registrationRequired && registrationToken && (
+            <button
+              type="button"
+              onClick={() => setStep("registration")}
+              className="flex w-full items-center gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-left hover:bg-emerald-500/15"
+            >
+              <UserPlus className="text-emerald-400" />
+              <span>
+                <strong className="block">Première utilisation</strong>
+                <small className="text-slate-400">
+                  Créer mon compte Agent et obtenir un matricule
+                </small>
+              </span>
+            </button>
+          )}
+          {!registrationRequired && (
+            <p className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-xs text-slate-400">
+              Un agent est déjà enregistré pour ce Fokontany. L'inscription est
+              fermée.
+            </p>
+          )}
         </section>
       </div>
     );
@@ -102,7 +141,10 @@ export default function AgentAccess({ onBack }: AgentAccessProps) {
         fokontanyId={fokontanyId}
         fokontanyNom={fokontanyNom}
         onBack={() => setStep("access")}
-        onRegistered={(matricule) => { setRegisteredMatricule(matricule); setStep("login"); }}
+        onRegistered={(matricule) => {
+          setRegisteredMatricule(matricule);
+          setStep("login");
+        }}
       />
     );
   }
@@ -137,9 +179,9 @@ export default function AgentAccess({ onBack }: AgentAccessProps) {
         </button>
 
         {/* Emblème */}
-        <div className="mb-6">
+        {/* <div className="mb-6">
           <MadagascarEmblem variant="light" />
-        </div>
+        </div> */}
 
         {/* Carte principale */}
         <div className="auth-card rounded-3xl border border-slate-800/80 bg-slate-900/90 p-6 sm:p-8 shadow-2xl shadow-black/60 backdrop-blur-xl">
@@ -221,9 +263,13 @@ export default function AgentAccess({ onBack }: AgentAccessProps) {
 
             {/* Explication discrète */}
             <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-3.5 flex items-start gap-3">
-              <ShieldCheck size={16} className="mt-0.5 shrink-0 text-blue-400" />
+              <ShieldCheck
+                size={16}
+                className="mt-0.5 shrink-0 text-blue-400"
+              />
               <p className="text-[11px] leading-relaxed text-slate-400">
-                Ces codes vous sont communiqués ou scannés via le QR Code affiché par votre Chef Fokontany.
+                Ces codes vous sont communiqués ou scannés via le QR Code
+                affiché par votre Chef Fokontany.
               </p>
             </div>
 

@@ -14,7 +14,10 @@ from app.schemas.fokontany import (
     FokontanyResponse,
     FokontanyUpdate,
 )
-from app.services.audit_service import log_action
+from app.services.audit_service import OUTCOME_SUCCESS, log_action
+from app.services.fokontany_code_service import (
+    generer_code_fokontany,
+)
 
 
 router = APIRouter(
@@ -34,9 +37,21 @@ def create_fokontany(
     db: Session = Depends(get_db),
     admin: Utilisateur = Depends(require_admin),
 ):
+    # Le code est attribué automatiquement lorsqu'il n'est pas
+    # fourni, afin que toute création passe par la même norme
+    # que l'inscription publique.
+    code = (
+        data.code.strip().upper()
+        if data.code
+        else generer_code_fokontany(
+            db,
+            district=data.district,
+        )
+    )
+
     existing = db.scalar(
         select(Fokontany).where(
-            Fokontany.code == data.code
+            Fokontany.code == code
         )
     )
 
@@ -48,7 +63,7 @@ def create_fokontany(
 
     fokontany = Fokontany(
         nom=data.nom,
-        code=data.code,
+        code=code,
         commune=data.commune,
         district=data.district,
         region=data.region,
@@ -67,7 +82,9 @@ def create_fokontany(
         action="CREATE",
         resource_type="FOKONTANY",
         resource_id=fokontany.id,
+        utilisateur_id=admin.id,
         fokontany_id=fokontany.id,
+        outcome=OUTCOME_SUCCESS,
         details=(
             f"Création du territoire Fokontany "
             f"{fokontany.nom} ({fokontany.code}) "
@@ -159,7 +176,9 @@ def update_fokontany(
         action="UPDATE",
         resource_type="FOKONTANY",
         resource_id=fokontany.id,
+        utilisateur_id=admin.id,
         fokontany_id=fokontany.id,
+        outcome=OUTCOME_SUCCESS,
         details=(
             f"Modification du territoire Fokontany "
             f"{fokontany.nom} ({fokontany.code}) "
@@ -181,6 +200,7 @@ def update_fokontany(
 )
 def deactivate_fokontany(
     fokontany_id: uuid.UUID,
+    request: Request,
     db: Session = Depends(get_db),
     admin: Utilisateur = Depends(require_admin),
 ):
@@ -197,5 +217,21 @@ def deactivate_fokontany(
 
     # On désactive plutôt que de supprimer.
     fokontany.is_active = False
+
+    log_action(
+        db,
+        action="DELETE",
+        resource_type="FOKONTANY",
+        resource_id=fokontany.id,
+        utilisateur_id=admin.id,
+        fokontany_id=fokontany.id,
+        outcome=OUTCOME_SUCCESS,
+        details=(
+            f"Désactivation du territoire Fokontany "
+            f"{fokontany.nom} ({fokontany.code}) "
+            f"par {admin.nom} {admin.prenoms}."
+        ),
+        request=request,
+    )
 
     db.commit()

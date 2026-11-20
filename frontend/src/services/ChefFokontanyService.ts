@@ -1,7 +1,6 @@
-const API_URL = import.meta.env.VITE_API_URL || "";
+const API_URL = (import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || "").replace(/\/$/, "");
 
 export interface ChefFokontanyRegisterData {
-  code_fokontany: string;
   nom_fokontany: string;
   commune: string;
   district: string;
@@ -20,6 +19,15 @@ export interface ChefFokontanyRegisterResponse {
   request_id: string;
   statut: string;
   message: string;
+  code_fokontany: string;
+  nom_fokontany: string;
+  commune: string;
+  district: string;
+  region: string;
+  province: string;
+  nom: string;
+  prenoms: string;
+  created_at: string;
 }
 
 export async function registerChefFokontany(

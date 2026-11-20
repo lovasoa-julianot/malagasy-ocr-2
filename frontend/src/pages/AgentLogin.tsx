@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { MadagascarEmblem } from "./public/MadagascarEmblem";
 
 interface AgentLoginProps {
   fokontanyId: string;
@@ -94,9 +93,9 @@ export default function AgentLogin({
         </button>
 
         {/* Emblème */}
-        <div className="mb-6">
+        {/* <div className="mb-6">
           <MadagascarEmblem variant="light" />
-        </div>
+        </div> */}
 
         {/* Carte principale */}
         <div className="auth-card rounded-3xl border border-slate-800/80 bg-slate-900/90 p-6 sm:p-8 shadow-2xl shadow-black/60 backdrop-blur-xl">

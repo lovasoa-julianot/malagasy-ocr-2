@@ -20,13 +20,16 @@ from app.models.utilisateur import Utilisateur
 from app.schemas.admin import (
     AdminAgentCreate,
     AdminAgentItem,
+    AdminAuditFilterOption,
     AdminAuditLogItem,
+    AdminAuditLogMeta,
+    AdminAuditLogPage,
     AdminDashboardStatsResponse,
     AdminFokontanyStatItem,
     AdminRecensementItem,
     QualityAlertItem,
 )
-from app.services.audit_service import log_action
+from app.services.audit_service import OUTCOME_SUCCESS, log_action
 from app.services.agent_service import generate_agent_matricule
 from app.services.chef_portal_service import format_relative_fr
 
@@ -37,12 +40,15 @@ from app.services.chef_portal_service import format_relative_fr
 
 ACTION_LABELS = {
     "LOGIN": "Connexion",
+    "LOGOUT": "Déconnexion",
     "CREATE": "Création",
     "UPDATE": "Modification",
     "APPROVE": "Approbation",
     "REJECT": "Rejet",
     "VALIDATE": "Validation",
     "EXPORT": "Export",
+    "DELETE": "Suppression",
+    "OCR": "Lecture OCR",
 }
 
 RESOURCE_LABELS = {
@@ -50,11 +56,13 @@ RESOURCE_LABELS = {
     "AGENT": "Agent",
     "FOKONTANY": "Fokontany",
     "CHEF_REQUEST": "Demande Chef Fokontany",
+    "OCR": "Lecture OCR",
     "SYSTEM": "Système",
 }
 
 # Seuil de confiance OCR en dessous duquel une alerte est levée.
-OCR_CONFIDENCE_THRESHOLD = 0.75
+# L'échelle est un pourcentage (0 à 100), cf. RecensementCreate.
+OCR_CONFIDENCE_THRESHOLD = 75.0
 
 
 class AdminService:
@@ -381,7 +389,9 @@ class AdminService:
             resource_type="AGENT",
             resource_id=agent.id,
             agent_id=agent.id,
+            utilisateur_id=admin.id,
             fokontany_id=fokontany.id,
+            outcome=OUTCOME_SUCCESS,
             details=(
                 f"Création de l'agent {agent.matricule} "
                 f"({agent.nom} {agent.prenoms}) "
@@ -428,7 +438,9 @@ class AdminService:
             resource_type="AGENT",
             resource_id=agent.id,
             agent_id=agent.id,
+            utilisateur_id=admin.id,
             fokontany_id=agent.fokontany_id,
+            outcome=OUTCOME_SUCCESS,
             details=(
                 f"{'Activation' if is_active else 'Désactivation'} "
                 f"de l'agent {agent.matricule} "
@@ -597,7 +609,9 @@ class AdminService:
             ),
             resource_type="RECENSEMENT",
             resource_id=recensement.id,
+            utilisateur_id=admin.id,
             fokontany_id=recensement.fokontany_id,
+            outcome=OUTCOME_SUCCESS,
             details=(
                 f"Recensement {recensement.numero_fiche} : "
                 f"{previous} -> {target.value} "
@@ -615,82 +629,402 @@ class AdminService:
     # --------------------------------------------------------
 
     @staticmethod
+    def _audit_base_query():
+        return select(AuditLog)
+
+    @staticmethod
+    def _apply_audit_filters(
+        query,
+        action: str | None,
+        resource_type: str | None,
+        user_type: str | None,
+        outcome: str | None,
+        fokontany_id: UUID | None,
+        date_debut: datetime | None,
+        date_fin: datetime | None,
+        search: str | None,
+    ):
+        if action:
+            query = query.where(AuditLog.action == action)
+
+        if resource_type:
+            query = query.where(
+                AuditLog.resource_type == resource_type
+            )
+
+        if outcome:
+            query = query.where(AuditLog.outcome == outcome)
+
+        if fokontany_id:
+            query = query.where(
+                AuditLog.fokontany_id == fokontany_id
+            )
+
+        if date_debut:
+            query = query.where(
+                AuditLog.created_at >= date_debut
+            )
+
+        if date_fin:
+            query = query.where(
+                AuditLog.created_at <= date_fin
+            )
+
+        if user_type == "AGENT":
+            query = query.where(
+                AuditLog.agent_id.is_not(None)
+            )
+
+        elif user_type in {"ADMIN", "CHEF_FOKONTANY"}:
+            query = query.where(
+                AuditLog.utilisateur_id.in_(
+                    select(Utilisateur.id).where(
+                        Utilisateur.role == user_type
+                    )
+                )
+            )
+
+        elif user_type == "ANONYME":
+            query = query.where(
+                AuditLog.agent_id.is_(None),
+                AuditLog.utilisateur_id.is_(None),
+            )
+
+        if search:
+            pattern = f"%{search.strip()}%"
+
+            query = query.where(
+                AuditLog.details.ilike(pattern)
+                | AuditLog.action.ilike(pattern)
+                | AuditLog.resource_type.ilike(pattern)
+                | AuditLog.resource_id.ilike(pattern)
+                | AuditLog.ip_address.ilike(pattern)
+            )
+
+        return query
+
+    @staticmethod
+    def _audit_item(
+        entry: AuditLog,
+        agent: Agent | None,
+        fokontany: Fokontany | None,
+        utilisateur: Utilisateur | None,
+    ) -> AdminAuditLogItem:
+
+        if utilisateur and utilisateur.role == "CHEF_FOKONTANY":
+            user_type = "CHEF_FOKONTANY"
+            user_name = (
+                f"{utilisateur.nom} {utilisateur.prenoms}".strip()
+            )
+
+        elif utilisateur:
+            user_type = "ADMIN"
+            user_name = (
+                f"{utilisateur.nom} {utilisateur.prenoms}".strip()
+            )
+
+        elif agent:
+            user_type = "AGENT"
+            user_name = f"{agent.nom} {agent.prenoms}".strip()
+
+        else:
+            user_type = "SYSTEM"
+            user_name = "Non attribué"
+
+        action_label = ACTION_LABELS.get(
+            entry.action,
+            entry.action,
+        )
+
+        resource_type = entry.resource_type or "SYSTEM"
+
+        resource_type_label = RESOURCE_LABELS.get(
+            resource_type,
+            resource_type,
+        )
+
+        details = entry.details or (
+            f"{action_label} - {resource_type_label} "
+            f"{entry.resource_id or ''}".strip()
+        )
+
+        return AdminAuditLogItem(
+            id=entry.id,
+            timestamp=entry.created_at,
+            user_type=user_type,
+            user_name=user_name,
+            action=entry.action,
+            action_label=action_label,
+            resource_type=resource_type,
+            resource_type_label=resource_type_label,
+            resource_id=entry.resource_id,
+            fokontany_nom=fokontany.nom if fokontany else None,
+            region=fokontany.region if fokontany else None,
+            ip_address=entry.ip_address,
+            outcome=entry.outcome,
+            duration_ms=entry.duration_ms,
+            details=details,
+        )
+
+    @staticmethod
     def list_audit_logs(
         db: Session,
-        limit: int = 200,
-    ) -> list[AdminAuditLogItem]:
+        action: str | None = None,
+        resource_type: str | None = None,
+        user_type: str | None = None,
+        outcome: str | None = None,
+        fokontany_id: UUID | None = None,
+        date_debut: datetime | None = None,
+        date_fin: datetime | None = None,
+        search: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> AdminAuditLogPage:
+
+        query = AdminService._apply_audit_filters(
+            AdminService._audit_base_query(),
+            action=action,
+            resource_type=resource_type,
+            user_type=user_type,
+            outcome=outcome,
+            fokontany_id=fokontany_id,
+            date_debut=date_debut,
+            date_fin=date_fin,
+            search=search,
+        )
+
+        total = (
+            db.scalar(
+                select(func.count()).select_from(
+                    query.subquery()
+                )
+            )
+            or 0
+        )
 
         entries = (
             db.scalars(
-                select(AuditLog)
-                .order_by(AuditLog.created_at.desc())
+                query.order_by(AuditLog.created_at.desc())
+                .offset(offset)
                 .limit(limit)
             )
             .all()
         )
 
-        items = []
+        # Chargement groupé des acteurs et des territoires :
+        # évite une requête par ligne du journal.
+        agent_ids = {
+            entry.agent_id
+            for entry in entries
+            if entry.agent_id
+        }
 
-        for entry in entries:
-            fokontany = (
-                db.get(Fokontany, entry.fokontany_id)
-                if entry.fokontany_id
-                else None
-            )
+        utilisateur_ids = {
+            entry.utilisateur_id
+            for entry in entries
+            if entry.utilisateur_id
+        }
 
-            agent = (
-                db.get(Agent, entry.agent_id)
-                if entry.agent_id
-                else None
-            )
+        fokontany_ids = {
+            entry.fokontany_id
+            for entry in entries
+            if entry.fokontany_id
+        }
 
-            chef = fokontany.chef if fokontany else None
+        agents = {
+            agent.id: agent
+            for agent in db.scalars(
+                select(Agent).where(Agent.id.in_(agent_ids))
+            ).all()
+        } if agent_ids else {}
 
-            if agent:
-                user_type = "AGENT"
-                user_name = (
-                    f"{agent.nom} {agent.prenoms}".strip()
+        utilisateurs = {
+            user.id: user
+            for user in db.scalars(
+                select(Utilisateur).where(
+                    Utilisateur.id.in_(utilisateur_ids)
                 )
-            elif chef:
-                user_type = "CHEF_FOKONTANY"
-                user_name = (
-                    f"{chef.nom} {chef.prenoms}".strip()
+            ).all()
+        } if utilisateur_ids else {}
+
+        fokontanys = {
+            fokontany.id: fokontany
+            for fokontany in db.scalars(
+                select(Fokontany).where(
+                    Fokontany.id.in_(fokontany_ids)
                 )
-            else:
-                user_type = "ADMIN"
-                user_name = "Administrateur Système"
+            ).all()
+        } if fokontany_ids else {}
 
-            resource_label = RESOURCE_LABELS.get(
-                entry.resource_type or "",
-                entry.resource_type or "—",
+        items = [
+            AdminService._audit_item(
+                entry,
+                agents.get(entry.agent_id),
+                fokontanys.get(entry.fokontany_id),
+                utilisateurs.get(entry.utilisateur_id),
+            )
+            for entry in entries
+        ]
+
+        pages = (
+            (total + limit - 1) // limit
+            if limit
+            else 0
+        )
+
+        return AdminAuditLogPage(
+            items=items,
+            total=total,
+            limit=limit,
+            offset=offset,
+            page=(offset // limit + 1) if limit else 1,
+            pages=pages,
+        )
+
+    @staticmethod
+    def audit_log_meta(
+        db: Session,
+    ) -> AdminAuditLogMeta:
+
+        def counts(column) -> dict[str, int]:
+            rows = (
+                db.query(column, func.count(AuditLog.id))
+                .group_by(column)
+                .all()
             )
 
-            action_label = ACTION_LABELS.get(
-                entry.action,
-                entry.action,
-            )
+            return {
+                str(value): total
+                for value, total in rows
+                if value
+            }
 
-            details = entry.details or (
-                f"{action_label} - {resource_label} "
-                f"{entry.resource_id or ''}".strip()
-            )
+        action_counts = counts(AuditLog.action)
 
-            items.append(
-                AdminAuditLogItem(
-                    id=entry.id,
-                    timestamp=entry.created_at,
-                    user_type=user_type,
-                    user_name=user_name,
-                    action=entry.action,
-                    resource_type=entry.resource_type or "SYSTEM",
-                    resource_id=entry.resource_id,
-                    fokontany_nom=fokontany.nom if fokontany else None,
-                    ip_address=entry.ip_address,
-                    details=details,
+        resource_counts = counts(AuditLog.resource_type)
+
+        role_rows = (
+            db.query(
+                Utilisateur.role,
+                func.count(AuditLog.id),
+            )
+            .join(
+                Utilisateur,
+                AuditLog.utilisateur_id == Utilisateur.id,
+            )
+            .group_by(Utilisateur.role)
+            .all()
+        )
+
+        agent_count = (
+            db.query(func.count(AuditLog.id))
+            .filter(AuditLog.agent_id.is_not(None))
+            .scalar()
+            or 0
+        )
+
+        system_count = (
+            db.query(func.count(AuditLog.id))
+            .filter(
+                AuditLog.agent_id.is_(None),
+                AuditLog.utilisateur_id.is_(None),
+            )
+            .scalar()
+            or 0
+        )
+
+        user_type_counts: dict[str, int] = {
+            "AGENT": agent_count,
+            "SYSTEM": system_count,
+        }
+
+        for role, total in role_rows:
+            user_type_counts[role] = total
+
+        fokontany_rows = (
+            db.query(
+                Fokontany.id,
+                Fokontany.nom,
+                func.count(AuditLog.id),
+            )
+            .join(
+                Fokontany,
+                AuditLog.fokontany_id == Fokontany.id,
+            )
+            .group_by(Fokontany.id, Fokontany.nom)
+            .order_by(func.count(AuditLog.id).desc())
+            .limit(50)
+            .all()
+        )
+
+        bornes = db.query(
+            func.min(AuditLog.created_at),
+            func.max(AuditLog.created_at),
+        ).one()
+
+        return AdminAuditLogMeta(
+            actions=[
+                AdminAuditFilterOption(
+                    value=value,
+                    label=ACTION_LABELS.get(value, value),
+                    count=total,
                 )
-            )
-
-        return items
+                for value, total in sorted(
+                    action_counts.items(),
+                    key=lambda item: item[1],
+                    reverse=True,
+                )
+            ],
+            resource_types=[
+                AdminAuditFilterOption(
+                    value=value,
+                    label=RESOURCE_LABELS.get(value, value),
+                    count=total,
+                )
+                for value, total in sorted(
+                    resource_counts.items(),
+                    key=lambda item: item[1],
+                    reverse=True,
+                )
+            ],
+            user_types=[
+                AdminAuditFilterOption(
+                    value="ADMIN",
+                    label="Administrateurs",
+                    count=user_type_counts.get("ADMIN", 0),
+                ),
+                AdminAuditFilterOption(
+                    value="CHEF_FOKONTANY",
+                    label="Chefs Fokontany",
+                    count=user_type_counts.get(
+                        "CHEF_FOKONTANY",
+                        0,
+                    ),
+                ),
+                AdminAuditFilterOption(
+                    value="AGENT",
+                    label="Agents recenseurs",
+                    count=user_type_counts.get("AGENT", 0),
+                ),
+                AdminAuditFilterOption(
+                    value="SYSTEM",
+                    label="Système",
+                    count=user_type_counts.get("SYSTEM", 0),
+                ),
+            ],
+            fokontany=[
+                AdminAuditFilterOption(
+                    value=str(fokontany_id),
+                    label=nom,
+                    count=total,
+                    id=fokontany_id,
+                )
+                for fokontany_id, nom, total in fokontany_rows
+            ],
+            total_evenements=sum(action_counts.values()),
+            premiere_trace=bornes[0],
+            derniere_trace=bornes[1],
+        )
 
     # --------------------------------------------------------
     # Alertes qualité
@@ -772,18 +1106,19 @@ class AdminService:
                         type="FAIBLE_CONFIANCE_OCR",
                         severity=(
                             "HIGH"
-                            if confidence < 0.5
+                            if confidence < 50
                             else "MEDIUM"
                         ),
                         title=(
                             "Confiance de lecture OCR "
                             f"inférieure à "
-                            f"{int(OCR_CONFIDENCE_THRESHOLD * 100)}%"
+                            f"{int(OCR_CONFIDENCE_THRESHOLD)}%"
                         ),
                         description=(
                             f"Le numéro CIN {personne.numero_cin} "
-                            f"a été lu avec une confiance de "
-                            f"{round(confidence * 100, 1)}%. "
+                            f"a été lu avec une précision de "
+                            f"{round(confidence, 1)}% "
+                            "(champs corrigés à la relecture). "
                             "Une relecture manuelle est recommandée."
                         ),
                         recensement_id=str(recensement.id),
@@ -944,6 +1279,8 @@ class AdminService:
             action="UPDATE",
             resource_type="SYSTEM",
             resource_id=alert_id,
+            utilisateur_id=admin.id,
+            outcome=OUTCOME_SUCCESS,
             details=(
                 f"Alerte qualité traitée : {alert_id} "
                 f"par {admin.nom} {admin.prenoms}."

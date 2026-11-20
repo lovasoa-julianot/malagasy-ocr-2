@@ -22,7 +22,7 @@ from app.schemas.chef_portal import (
     UpdateRecensementStatusRequest,
     UpdateRecensementStatusResponse,
 )
-from app.services.audit_service import log_action
+from app.services.audit_service import OUTCOME_SUCCESS, log_action
 from app.services.chef_portal_service import ChefPortalService
 
 
@@ -84,7 +84,9 @@ def chef_fokontany_login(
         action="LOGIN",
         resource_type="SYSTEM",
         resource_id=chef.id,
+        utilisateur_id=chef.id,
         fokontany_id=fokontany.id,
+        outcome=OUTCOME_SUCCESS,
         details=(
             f"Connexion de {chef.nom} {chef.prenoms} "
             f"au portail du Fokontany {fokontany.code}."

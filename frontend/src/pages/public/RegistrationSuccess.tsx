@@ -25,17 +25,22 @@ export function RegistrationSuccess({
   onReset,
   onGoToLogin,
 }: RegistrationSuccessProps) {
-  const [copied, setCopied] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
 
-  const handleCopyRef = () => {
-    navigator.clipboard.writeText(response.request_id);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(response.code_fokontany);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2000);
   };
 
   const handlePrint = () => {
     window.print();
   };
+
+  const dateDepot = new Date(response.created_at).toLocaleString("fr-FR", {
+    dateStyle: "long",
+    timeStyle: "short",
+  });
 
   return (
     <div className="min-h-screen bg-slate-100/70 py-10 px-4 flex items-center justify-center">
@@ -72,20 +77,24 @@ export function RegistrationSuccess({
             <div className="bg-slate-50 border border-slate-200/90 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
               <div>
                 <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
-                  Numéro de Récépissé de Dépôt
+                  Code du Fokontany attribué
                 </span>
                 <span className="text-base sm:text-lg font-mono font-bold text-slate-900">
-                  {response.request_id}
+                  {response.code_fokontany}
+                </span>
+                <span className="block text-[11px] text-slate-500 mt-0.5">
+                  Norme FKT-(lettre du district)-(numéro) ·{" "}
+                  {response.nom_fokontany}
                 </span>
               </div>
 
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={handleCopyRef}
+                  onClick={handleCopyCode}
                   className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition shadow-xs"
                 >
-                  {copied ? (
+                  {copiedCode ? (
                     <>
                       <Check size={14} className="text-emerald-600" />
                       Copié
@@ -93,7 +102,7 @@ export function RegistrationSuccess({
                   ) : (
                     <>
                       <Copy size={14} />
-                      Copier
+                      Copier le code
                     </>
                   )}
                 </button>
@@ -115,12 +124,18 @@ export function RegistrationSuccess({
                 <div className="p-2 rounded-lg bg-emerald-100 text-emerald-800 shrink-0">
                   <Building size={16} />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="text-slate-400 font-medium">
                     Fokontany & Circonscription
                   </div>
-                  <div className="text-slate-800 font-semibold mt-0.5">
-                    {response.request_id}
+                  <div className="text-slate-800 font-semibold mt-0.5 break-words">
+                    {response.nom_fokontany}
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-0.5 break-words">
+                    {response.commune} · District de {response.district}
+                  </div>
+                  <div className="text-[11px] text-slate-400 mt-0.5 break-words">
+                    Région {response.region} · Province {response.province}
                   </div>
                 </div>
               </div>
@@ -129,12 +144,12 @@ export function RegistrationSuccess({
                 <div className="p-2 rounded-lg bg-emerald-100 text-emerald-800 shrink-0">
                   <UserCheck size={16} />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="text-slate-400 font-medium">
                     Chef Déclarant
                   </div>
-                  <div className="text-slate-800 font-semibold mt-0.5">
-                    {response.request_id}
+                  <div className="text-slate-800 font-semibold mt-0.5 break-words">
+                    {response.nom} {response.prenoms}
                   </div>
                 </div>
               </div>
@@ -157,7 +172,11 @@ export function RegistrationSuccess({
                       Enregistrement initial (Terminé)
                     </span>
                     <span className="text-[11px] text-slate-500">
-                      Horodaté le {response.request_id}. Récépissé généré.
+                      Horodaté le {dateDepot}. Code{" "}
+                      <span className="font-mono">
+                        {response.code_fokontany}
+                      </span>{" "}
+                      attribué.
                     </span>
                   </div>
                 </div>
@@ -199,9 +218,13 @@ export function RegistrationSuccess({
               <FileText size={16} className="text-blue-600 shrink-0 mt-0.5" />
               <p className="leading-relaxed">
                 <span className="font-semibold">Note administrative :</span>{" "}
-                Conservez précieusement le numéro de récépissé{" "}
+                Conservez précieusement le code de votre Fokontany{" "}
                 <span className="font-mono font-medium">
-                  {response.request_id}
+                  {response.code_fokontany}
+                </span>{" "}
+                ainsi que le numéro de récépissé{" "}
+                <span className="font-mono font-medium">
+                  {response.request_id.slice(0, 8)}
                 </span>{" "}
                 pour tout échange avec la Préfecture ou le Chef de District.
               </p>

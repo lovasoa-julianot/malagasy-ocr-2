@@ -2,7 +2,16 @@ import enum
 import uuid
 from datetime import date, datetime
 
-from sqlalchemy import Date, DateTime, Enum, ForeignKey, Float, String, func
+from sqlalchemy import (
+    Date,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Float,
+    Index,
+    String,
+    func,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -20,6 +29,19 @@ class RecensementStatus(str, enum.Enum):
 
 class Recensement(Base):
     __tablename__ = "recensements"
+
+    __table_args__ = (
+        Index(
+            "ix_recensements_fokontany_created_at",
+            "fokontany_id",
+            "created_at",
+        ),
+        Index(
+            "ix_recensements_agent_created_at",
+            "agent_id",
+            "created_at",
+        ),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4

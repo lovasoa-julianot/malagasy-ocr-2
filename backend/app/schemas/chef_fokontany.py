@@ -6,10 +6,9 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class ChefFokontanyRegisterRequest(BaseModel):
-    code_fokontany: str = Field(
-        min_length=1,
-        max_length=50,
-    )
+    # Le code Fokontany n'est plus demandé : il est attribué
+    # par le serveur selon la norme FKT-<lettre district>-<7
+    # chiffres>, à partir du district renseigné ci-dessous.
 
     nom_fokontany: str = Field(
         min_length=1,
@@ -69,6 +68,19 @@ class ChefFokontanyRegisterResponse(BaseModel):
     request_id: UUID
     statut: str
     message: str
+
+    # Code attribué par le serveur et données du dossier, afin
+    # que le récépissé affiché au demandeur reprenne les
+    # informations réellement enregistrées.
+    code_fokontany: str
+    nom_fokontany: str
+    commune: str
+    district: str
+    region: str
+    province: str
+    nom: str
+    prenoms: str
+    created_at: datetime
 
 
 class ChefFokontanyRequestResponse(BaseModel):

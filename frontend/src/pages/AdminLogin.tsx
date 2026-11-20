@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { MadagascarEmblem } from "./public/MadagascarEmblem";
 
 interface AdminLoginProps {
   onBack: () => void;
@@ -32,7 +31,9 @@ export default function AdminLogin({ onBack }: AdminLoginProps) {
     e.preventDefault();
 
     if (!email.trim() || !password) {
-      setError("Veuillez renseigner votre adresse email et votre mot de passe.");
+      setError(
+        "Veuillez renseigner votre adresse email et votre mot de passe.",
+      );
       return;
     }
 
@@ -64,8 +65,8 @@ export default function AdminLogin({ onBack }: AdminLoginProps) {
     <div className="auth-page relative min-h-screen overflow-hidden bg-[#090D16] text-slate-100 flex flex-col justify-center px-4 py-10 selection:bg-emerald-500 selection:text-white">
       {/* Background radial glows & grid */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute left-1/2 top-[-20%] h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-emerald-600/10 blur-[140px]" />
-        <div className="absolute right-[-10%] bottom-[-10%] h-[400px] w-[400px] rounded-full bg-blue-600/5 blur-[120px]" />
+        <div className="absolute left-1/2 top-[-20%] h-150 w-150 -translate-x-1/2 rounded-full bg-emerald-600/10 blur-[140px]" />
+        <div className="absolute right-[-10%] bottom-[-10%] h-100 w-100 rounded-full bg-blue-600/5 blur-[120px]" />
         <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
@@ -90,9 +91,9 @@ export default function AdminLogin({ onBack }: AdminLoginProps) {
         </button>
 
         {/* Emblème national officiel */}
-        <div className="mb-6">
+        {/* <div className="mb-6">
           <MadagascarEmblem variant="light" />
-        </div>
+        </div> */}
 
         {/* Carte principale */}
         <div className="auth-card rounded-3xl border border-slate-800/80 bg-slate-900/90 p-6 sm:p-8 shadow-2xl shadow-black/60 backdrop-blur-xl">

@@ -6,7 +6,7 @@ import type {
   FokontanyAccessCodeDetails,
 } from "../types/chefFokontany";
 
-const API_URL = import.meta.env.VITE_API_URL || "";
+const API_URL = (import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || "").replace(/\/$/, "");
 
 async function readJson<T>(response: Response, fallbackMessage: string): Promise<T> {
   const data = await response.json().catch(() => null);

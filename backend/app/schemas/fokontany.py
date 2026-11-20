@@ -5,7 +5,9 @@ from pydantic import BaseModel, ConfigDict
 
 class FokontanyCreate(BaseModel):
     nom: str
-    code: str
+    # Facultatif : attribué par le serveur selon la norme
+    # FKT-<lettre du district>-<7 chiffres> s'il est absent.
+    code: str | None = None
     commune: str
     district: str
     code_district: int | None = None
