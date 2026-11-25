@@ -52,3 +52,7 @@ class RecensementResponse(BaseModel):
     qr_token: str
     statut: str
     message: str
+
+    # True quand la personne (CIN + état civil) existait déjà : aucun
+    # doublon n'a ete cree, les donnees renvoient l'enregistrement existant.
+    deja_existe: bool = False

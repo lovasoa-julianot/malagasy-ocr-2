@@ -3,7 +3,7 @@ from datetime import date, datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.api.dependancy import get_current_agent
 from app.db.database import get_db
@@ -80,11 +80,6 @@ def create_recensement(
         )
 
     numero_cin = data.numero_cin.strip().upper()
-    numero_fiche = db.execute(
-        text("SELECT nextval('numero_fiche_seq')")
-    ).scalar_one()
-
-    numero_fiche = f"{int(numero_fiche):08d}"
 
     nom = data.nom.strip()
     prenoms = data.prenoms.strip()
@@ -127,8 +122,11 @@ def create_recensement(
     )
 
     # =========================================================
-    # 4. Vérification du CIN
+    # 4. Verification de l'existence de la personne (etat civil issu du CIN)
     # =========================================================
+    # Le numero CIN identifie une personne de maniere unique. S'il est
+    # deja present, on ignore la creation d'un doublon et on renvoie
+    # l'enregistrement existant (deja_existe = True).
 
     existing_personne = (
         db.query(Personne)
@@ -137,30 +135,86 @@ def create_recensement(
     )
 
     if existing_personne:
-        raise HTTPException(
-            status_code=409,
-            detail=(
-                f"Le numéro CIN {numero_cin} existe déjà "
-                "dans la base de données."
+        existing_recensement = (
+            db.query(Recensement)
+            .filter(Recensement.personne_id == existing_personne.id)
+            .order_by(Recensement.created_at.desc())
+            .first()
+        )
+
+        log_action(
+            db,
+            action="CREATE",
+            resource_type="PERSONNE",
+            resource_id=existing_personne.id,
+            agent_id=current_agent.id,
+            fokontany_id=current_agent.fokontany_id,
+            outcome=OUTCOME_SUCCESS,
+            details=(
+                f"Personne deja enregistree (CIN {numero_cin}, "
+                f"{nom} {prenoms}) - aucun doublon cree par l'agent "
+                f"{current_agent.matricule} {current_agent.nom} "
+                f"{current_agent.prenoms}."
+            ),
+            request=request,
+        )
+
+        return RecensementResponse(
+            success=True,
+            deja_existe=True,
+            recensement_id=str(
+                existing_recensement.id if existing_recensement else existing_personne.id
+            ),
+            personne_id=str(existing_personne.id),
+            numero_fiche=(
+                existing_recensement.numero_fiche
+                if existing_recensement
+                else ""
+            ),
+            numero_cin=existing_personne.numero_cin,
+            qr_token=existing_recensement.qr_token if existing_recensement else "",
+            statut=(
+                existing_recensement.statut.value
+                if existing_recensement
+                else "EXISTE"
+            ),
+            message=(
+                f"Cette personne (CIN {numero_cin}) est deja enregistree. "
+                "Aucun doublon n'a ete cree."
             ),
         )
 
     # =========================================================
-    # 5. Vérification du numéro de fiche
+    # 5. Generation du numero de fiche (sans doublon)
     # =========================================================
+    # Le numero de fiche est tire d'une sequence PostgreSQL.
+    # Si une collision survient (numero deja present), on en
+    # genere un nouveau jusqu'à en trouver un disponible.
 
-    existing_recensement = (
-        db.query(Recensement)
-        .filter(Recensement.numero_fiche == numero_fiche)
-        .first()
-    )
+    MAX_FICHE_ATTEMPTS = 50
 
-    if existing_recensement:
+    numero_fiche = None
+    for _ in range(MAX_FICHE_ATTEMPTS):
+        valeur = db.execute(
+            text("SELECT nextval('numero_fiche_seq')")
+        ).scalar_one()
+        candidat = f"{int(valeur):08d}"
+
+        deja_pris = (
+            db.query(Recensement)
+            .filter(Recensement.numero_fiche == candidat)
+            .first()
+        )
+        if not deja_pris:
+            numero_fiche = candidat
+            break
+
+    if numero_fiche is None:
         raise HTTPException(
-            status_code=409,
+            status_code=500,
             detail=(
-                f"Le numéro de fiche {numero_fiche} "
-                "existe déjà."
+                "Impossible de generer un numero de fiche unique "
+                f"apres {MAX_FICHE_ATTEMPTS} tentatives."
             ),
         )
 
@@ -355,9 +409,13 @@ def get_recensement_detail(
 ):
     recensement = (
         db.query(Recensement)
+        .options(
+            joinedload(Recensement.agent),
+            joinedload(Recensement.fokontany),
+            joinedload(Recensement.personne),
+        )
         .filter(
             Recensement.id == recensement_id,
-            Recensement.agent_id == current_agent.id,
         )
         .first()
     )
@@ -438,18 +496,18 @@ def get_recensement_detail(
         },
 
         "agent": {
-            "id": str(current_agent.id),
-            "matricule": current_agent.matricule,
-            "nom": current_agent.nom,
-            "prenoms": current_agent.prenoms,
+            "id": str(recensement.agent.id),
+            "matricule": recensement.agent.matricule,
+            "nom": recensement.agent.nom,
+            "prenoms": recensement.agent.prenoms,
         },
 
         "fokontany": {
-            "id": str(current_agent.fokontany.id),
-            "code": current_agent.fokontany.code,
-            "nom": current_agent.fokontany.nom,
-            "commune": current_agent.fokontany.commune,
-            "district": current_agent.fokontany.district,
-            "region": current_agent.fokontany.region,
+            "id": str(recensement.fokontany.id),
+            "code": recensement.fokontany.code,
+            "nom": recensement.fokontany.nom,
+            "commune": recensement.fokontany.commune,
+            "district": recensement.fokontany.district,
+            "region": recensement.fokontany.region,
         },
     }

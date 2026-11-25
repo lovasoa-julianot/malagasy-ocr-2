@@ -218,7 +218,7 @@ export default function ChefFokontanyLogin({
           </form>
 
           {/* Raccourci Démo */}
-          <div className="mt-5 border-t border-slate-800/80 pt-4">
+          {/* <div className="mt-5 border-t border-slate-800/80 pt-4">
             <button
               type="button"
               onClick={handleFillDemo}
@@ -232,7 +232,7 @@ export default function ChefFokontanyLogin({
                 chef.andrainjato@fokontany.mg
               </span>
             </button>
-          </div>
+          </div> */}
 
           {/* Adhésion nouveau Fokontany */}
           <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-950/60 p-4">

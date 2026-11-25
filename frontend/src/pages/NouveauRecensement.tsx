@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import {
+  AlertCircle,
   ArrowLeft,
   ArrowRight,
   Camera,
@@ -23,7 +24,12 @@ import { useAuth } from "../context/AuthContext";
 import { extractCIN } from "../services/ocrService";
 import { createRecensement } from "../services/recensementService";
 
-type Step = "documents" | "ocr" | "verification" | "success";
+type Step =
+  | "documents"
+  | "ocr"
+  | "verification"
+  | "success"
+  | "existe";
 
 interface CINFiles {
   recto: File | null;
@@ -130,6 +136,8 @@ export default function NouveauRecensement() {
     numero_cin: string;
     qr_token: string;
     statut: string;
+    message: string;
+    deja_existe: boolean;
   } | null>(null);
 
   /*
@@ -294,9 +302,15 @@ export default function NouveauRecensement() {
         numero_cin: result.numero_cin,
         qr_token: result.qr_token,
         statut: result.statut,
+        message: result.message,
+        deja_existe: result.deja_existe,
       });
 
-      setStep("success");
+      if (result.deja_existe) {
+        setStep("existe");
+      } else {
+        setStep("success");
+      }
     } catch (error) {
       console.error("Erreur lors de l'enregistrement :", error);
 
@@ -423,6 +437,14 @@ export default function NouveauRecensement() {
 
       {step === "success" && registrationResult && (
         <SuccessStep
+          result={registrationResult}
+          onNew={resetForm}
+          onHistory={() => navigate("/agent/historique")}
+        />
+      )}
+
+      {step === "existe" && registrationResult && (
+        <ExisteStep
           result={registrationResult}
           onNew={resetForm}
           onHistory={() => navigate("/agent/historique")}
@@ -1319,6 +1341,97 @@ function SuccessStep({ result, onNew, onHistory }: SuccessStepProps) {
 
           <p className="mt-2 break-all font-mono text-xs text-slate-400">
             {result.qr_token}
+          </p>
+        </div>
+
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+          <button
+            onClick={onNew}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-500"
+          >
+            <ScanLine size={18} />
+            Nouveau recensement
+          </button>
+
+          <button
+            onClick={onHistory}
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 px-5 py-3 text-sm font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white"
+          >
+            Voir l'historique
+            <ArrowRight size={17} />
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Personne deja enregistree                                                  */
+/* -------------------------------------------------------------------------- */
+
+interface ExisteStepProps {
+  result: {
+    numero_fiche: string;
+    numero_cin: string;
+    qr_token: string;
+    statut: string;
+    message: string;
+    deja_existe: boolean;
+  };
+  onNew: () => void;
+  onHistory: () => void;
+}
+
+function ExisteStep({
+  result,
+  onNew,
+  onHistory,
+}: ExisteStepProps) {
+  const { agent } = useAuth();
+
+  if (!agent) return null;
+  return (
+    <div className="mx-auto max-w-3xl">
+      <section className="rounded-3xl border border-amber-500/20 bg-slate-900 p-6 text-center shadow-2xl sm:p-10">
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-amber-500/10 text-amber-400">
+          <AlertCircle size={42} />
+        </div>
+
+        <p className="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-amber-400">
+          Personne deja enregistree
+        </p>
+
+        <h1 className="mt-3 text-2xl font-bold text-white sm:text-3xl">
+          Aucun doublon cree
+        </h1>
+
+        <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-slate-500">
+          Cette personne est deja enregistree dans la base de donnees. Aucune
+          nouvelle fiche n'a ete creee.
+        </p>
+
+        <div className="mx-auto mt-8 grid max-w-xl gap-3 sm:grid-cols-2">
+          <ResultCard label="Personne existante" value="Oui" />
+
+          <ResultCard label="Numero CIN" value={result.numero_cin} />
+
+          <ResultCard
+            label="Derniere fiche associee"
+            value={result.numero_fiche || "Aucune"}
+          />
+
+          <ResultCard
+            label="Agent"
+            value={`${agent.nom} ${agent.prenoms}`}
+          />
+        </div>
+
+        <div className="mt-5 rounded-xl border border-slate-800 bg-slate-950 p-4 text-left">
+          <p className="text-xs text-slate-500">Message</p>
+
+          <p className="mt-2 break-all text-xs text-slate-400">
+            {result.message || "La personne existe deja."}
           </p>
         </div>
 

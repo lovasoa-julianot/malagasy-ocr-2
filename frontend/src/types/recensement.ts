@@ -35,4 +35,10 @@ export interface RecensementResponse {
   qr_token: string;
   statut: string;
   message: string;
+
+  /**
+   * Vrai quand la personne (CIN + etat civil) existait deja : aucun
+   * doublon n'a ete cree, les donnees renvoient l'enregistrement existant.
+   */
+  deja_existe: boolean;
 }

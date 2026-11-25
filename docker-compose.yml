@@ -21,5 +21,45 @@ services:
       timeout: 5s
       retries: 5
 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ocr-cin-backend
+    restart: unless-stopped
+    environment:
+      APP_NAME: "OCR CIN Madagascar API"
+      APP_ENV: "production"
+      DATABASE_URL: "postgresql+psycopg2://ocr_user:ocr_password@postgres:5432/ocr_cin_db"
+      CORS_ORIGINS: '["http://localhost:3000","http://localhost:3100","http://127.0.0.1:3000","http://127.0.0.1:3100"]'
+      JWT_SECRET_KEY: "mbmmTZtGw9GrxHZM2OMODGVk41hLzlAIz5H_EqngsCvmwrOaHrHD9QDDpYw9CmiTrRdW841AQiFIAoIcfaPRLQ"
+      JWT_ALGORITHM: "HS256"
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: 480
+      GEMINI_API_KEY: ""
+      GEMINI_PRIMARY_MODEL: "gemini-2.5-flash"
+      GEMINI_FALLBACK_MODEL: "gemini-2.5-flash-lite"
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/alembic:/app/alembic
+      - ./backend/alembic.ini:/app/alembic.ini
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ocr-cin-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      VITE_BACKEND_URL: "http://localhost:8000"
+
 volumes:
   postgres_data:
